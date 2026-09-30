@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 5 of 8. Stop, Hold, Love, Buy and the North Star as code across many brands' streams and two host types: every ratio with its denominator, ratio of sums against mean of ratios, and a host scorecard in pandas and SQL on a constructed eight-stream table.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Stop, Hold, Love, Buy as code - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 5 of 8. Five ratios, five denominators, two averages that answer two different questions, and a host scorecard that GMV cannot rank. Constructed Pasar Live data, real code.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b5-stop-hold-love-buy.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stop, Hold, Love, Buy as code - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 5 of 8. Five denominators, 0.96 against 1.71 percent, and why orders rank rooms while the North Star ranks hosts.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 5 · Stop, Hold, Love, Buy as code - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 5 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 5 of 8</div>
+    <h1>Stop, Hold, Love, Buy <span class="accent">as code</span></h1>
+    <p class="sub">Session 4 gave Pasar Live one clock and one minute table. Tonight the minute table becomes a scorecard, and the scorecard has to survive a harder test than a single brand's dashboard ever faces: many brands' streams, two kinds of host, and a brand manager asking why her host ranks seventh. You write every stage as a numerator over a named denominator, meet the two averages that disagree by almost a factor of two on the same eight rows, and learn why orders rank the rooms while the North Star ranks the hosts. Then you build the whole scorecard in pandas and again in SQL, and the two agree to the second decimal.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Analysts</span>
+      <span class="chip audience">Python, pandas, SQL</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-19 · Denominators, averages, rankings</span>
+      <span class="a3" style="flex:7">19-41 · Build-along: the scorecard</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where this sits in the analyst track</h2>
+    </div>
+    <p class="lede">Sessions 1 to 3 built the estate, the conformed orders and the identity gate. Session 4 wrote the per-minute event spec for Pasar Live as a contract between eight teams. Tonight is the first session that turns that contract into a number somebody will be judged on, which is exactly when definitions start to matter. <strong>All Pasar Live data on this page is constructed</strong>: the marketplace, the channel, the hosts and the eight streams are invented to teach the shape of the problem, and your numbers will differ. The platform's own four stages, and every livestream method that reads a room minute by minute (survival curves, change-points, fixed effects, SHAP, host clustering, difference-in-differences), are taught in the <a href="https://phoebefu6.github.io/learn-live-commerce-analytics-with-phoebe/courses/b1-stream-as-data.html">live commerce analytics course, starting from the stream as data</a>. This page takes the enabler's side: many brands' streams on one scorecard, two host types, and a comparison fair enough to sell.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A stage dictionary where every ratio names its numerator and its denominator in one place, a pooled host scorecard in pandas and in SQL that match, and the sentence that ends most scorecard arguments before they start: "this is the ratio of sums, so it answers the channel's question, not the typical stream's".</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the stage metrics and their denominators</span>
+      <h2>Five ratios, five denominators</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">A stage metric is two counts and a slash. The slash is where the arguments live, because the denominator decides whose work is being graded. Pasar Live's naming, constructed for this story, writes five ratios plus the North Star, and each one says out loud what it divides by. Underneath there are only four distinct counts: Hold, Love and the North Star all divide by room entries.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 482" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two hand-drawn funnels from the constructed Pasar Live table. Left, stream S1, platform host: 120,000 live card impressions, 9,600 room entries, Stop 8.00 percent; 1,150 completers, Hold 11.98 percent; 290 replays, Love 3.02 percent; 8,200 product card impressions, 410 clicks, click rate 5.00 percent; 62 orders, click to order 15.12 percent; North Star 62 over 9,600 equals 0.65 percent. Right, stream S5, brand host: 40,000 impressions, 1,600 entries, Stop 4.00 percent; 520 completers, Hold 32.50 percent; 140 replays, Love 8.75 percent; 1,500 card impressions, 190 clicks, 12.67 percent; 44 orders, 23.16 percent; North Star 44 over 1,600 equals 2.75 percent. Curved arrows show Hold, Love and the North Star all dividing by entries.">
+        <defs>
+          <filter id="b5aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b5aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b5aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b5aH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5aL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5aS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b5aB { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #0A4D48; }
+          .b5aW { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #FFFFFF; }
+          .b5aN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b5aH" x="30" y="26">FIVE RATIOS, EACH WITH ITS DENOMINATOR</text>
+        <text class="b5aS" x="340" y="26">constructed · Pasar Live streams S1 and S5 · your numbers will differ</text>
+
+        <g filter="url(#b5aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- panels -->
+          <rect x="16" y="40" width="418" height="408" rx="12" transform="rotate(-0.3 225 244)" fill="#FFFFFF" stroke="#E2CDCB"/>
+          <rect x="446" y="40" width="418" height="408" rx="12" transform="rotate(0.3 655 244)" fill="#FFFFFF" stroke="#E2CDCB"/>
+          <!-- door doodle -->
+          <rect x="834" y="8" width="16" height="24" rx="2"/>
+          <path d="M846 21 L846 21.5"/>
+
+          <!-- left funnel, S1 -->
+          <rect x="60" y="74" width="210" height="30" rx="6" transform="rotate(-0.6 165 89)" fill="url(#b5aHc)"/>
+          <rect x="60" y="122" width="180" height="30" rx="6" transform="rotate(0.5 150 137)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="60" y="170" width="150" height="30" rx="6" transform="rotate(-0.7 135 185)" fill="#FDF1EF"/>
+          <rect x="60" y="218" width="130" height="30" rx="6" transform="rotate(0.6 125 233)" fill="#FDF1EF"/>
+          <path d="M60 257 L420 257" stroke="#E2CDCB" stroke-dasharray="6 5"/>
+          <rect x="60" y="266" width="170" height="30" rx="6" transform="rotate(-0.5 145 281)" fill="url(#b5aHc)"/>
+          <rect x="60" y="314" width="140" height="30" rx="6" transform="rotate(0.7 130 329)" fill="#FDF1EF"/>
+          <rect x="60" y="362" width="120" height="30" rx="6" transform="rotate(-0.6 120 377)" fill="#FFFFFF"/>
+          <rect x="40" y="408" width="370" height="30" rx="8" transform="rotate(0.3 225 423)" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M150 104 L150 120" marker-end="url(#b5aAr)"/>
+          <path d="M130 296 L130 312" marker-end="url(#b5aAr)"/>
+          <path d="M110 344 L110 360" marker-end="url(#b5aAr)"/>
+          <path d="M100 392 L100 406" marker-end="url(#b5aAr)"/>
+          <path d="M58 132 C40 140 40 180 56 185" marker-end="url(#b5aAr)"/>
+          <path d="M58 138 C32 150 32 228 56 233" marker-end="url(#b5aAr)"/>
+          <path d="M58 144 C22 170 24 390 48 405" marker-end="url(#b5aAr)"/>
+
+          <!-- right funnel, S5 -->
+          <rect x="490" y="74" width="210" height="30" rx="6" transform="rotate(0.6 595 89)" fill="url(#b5aHc)"/>
+          <rect x="490" y="122" width="180" height="30" rx="6" transform="rotate(-0.5 580 137)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="490" y="170" width="150" height="30" rx="6" transform="rotate(0.7 565 185)" fill="#FDF1EF"/>
+          <rect x="490" y="218" width="130" height="30" rx="6" transform="rotate(-0.6 555 233)" fill="#FDF1EF"/>
+          <path d="M490 257 L850 257" stroke="#E2CDCB" stroke-dasharray="6 5"/>
+          <rect x="490" y="266" width="170" height="30" rx="6" transform="rotate(0.5 575 281)" fill="url(#b5aHc)"/>
+          <rect x="490" y="314" width="140" height="30" rx="6" transform="rotate(-0.7 560 329)" fill="#FDF1EF"/>
+          <rect x="490" y="362" width="120" height="30" rx="6" transform="rotate(0.6 550 377)" fill="#FFFFFF"/>
+          <rect x="470" y="408" width="370" height="30" rx="8" transform="rotate(-0.3 655 423)" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M580 104 L580 120" marker-end="url(#b5aAr)"/>
+          <path d="M560 296 L560 312" marker-end="url(#b5aAr)"/>
+          <path d="M540 344 L540 360" marker-end="url(#b5aAr)"/>
+          <path d="M530 392 L530 406" marker-end="url(#b5aAr)"/>
+          <path d="M488 132 C470 140 470 180 486 185" marker-end="url(#b5aAr)"/>
+          <path d="M488 138 C462 150 462 228 486 233" marker-end="url(#b5aAr)"/>
+          <path d="M488 144 C452 170 454 390 478 405" marker-end="url(#b5aAr)"/>
+        </g>
+
+        <text class="b5aH" x="36" y="62">S1 · platform host · a big room</text>
+        <text class="b5aH" x="466" y="62">S5 · brand host · a small room</text>
+
+        <text class="b5aL" x="70" y="94">impressions 120,000</text>
+        <text class="b5aL" x="70" y="142">entries 9,600</text>
+        <text class="b5aL" x="70" y="190">completers 1,150</text>
+        <text class="b5aL" x="70" y="238">replays 290</text>
+        <text class="b5aL" x="70" y="286">card impr 8,200</text>
+        <text class="b5aL" x="70" y="334">clicks 410</text>
+        <text class="b5aL" x="70" y="382">orders 62</text>
+
+        <text class="b5aS" x="280" y="87">live card impressions</text>
+        <text class="b5aS" x="280" y="101">the feed showed the room</text>
+        <text class="b5aB" x="280" y="135">Stop 8.00%</text>
+        <text class="b5aS" x="280" y="149">entries / impressions</text>
+        <text class="b5aB" x="280" y="183">Hold 11.98%</text>
+        <text class="b5aS" x="280" y="197">completers / entries</text>
+        <text class="b5aB" x="280" y="231">Love 3.02%</text>
+        <text class="b5aS" x="280" y="245">replays / entries</text>
+        <text class="b5aB" x="280" y="279">own denominator</text>
+        <text class="b5aS" x="280" y="293">cards shown in room</text>
+        <text class="b5aB" x="280" y="327">click rate 5.00%</text>
+        <text class="b5aS" x="280" y="341">clicks / card impr</text>
+        <text class="b5aB" x="280" y="375">to order 15.12%</text>
+        <text class="b5aS" x="280" y="389">orders / clicks</text>
+        <text class="b5aW" x="56" y="428">North Star · 62 / 9,600 entries = 0.65%</text>
+
+        <text class="b5aL" x="500" y="94">impressions 40,000</text>
+        <text class="b5aL" x="500" y="142">entries 1,600</text>
+        <text class="b5aL" x="500" y="190">completers 520</text>
+        <text class="b5aL" x="500" y="238">replays 140</text>
+        <text class="b5aL" x="500" y="286">card impr 1,500</text>
+        <text class="b5aL" x="500" y="334">clicks 190</text>
+        <text class="b5aL" x="500" y="382">orders 44</text>
+
+        <text class="b5aS" x="710" y="87">live card impressions</text>
+        <text class="b5aS" x="710" y="101">the feed showed the room</text>
+        <text class="b5aB" x="710" y="135">Stop 4.00%</text>
+        <text class="b5aS" x="710" y="149">entries / impressions</text>
+        <text class="b5aB" x="710" y="183">Hold 32.50%</text>
+        <text class="b5aS" x="710" y="197">completers / entries</text>
+        <text class="b5aB" x="710" y="231">Love 8.75%</text>
+        <text class="b5aS" x="710" y="245">replays / entries</text>
+        <text class="b5aB" x="710" y="279">own denominator</text>
+        <text class="b5aS" x="710" y="293">cards shown in room</text>
+        <text class="b5aB" x="710" y="327">click rate 12.67%</text>
+        <text class="b5aS" x="710" y="341">clicks / card impr</text>
+        <text class="b5aB" x="710" y="375">to order 23.16%</text>
+        <text class="b5aS" x="710" y="389">orders / clicks</text>
+        <text class="b5aW" x="486" y="428">North Star · 44 / 1,600 entries = 2.75%</text>
+
+        <text class="b5aN" x="30" y="472">S1 has six times S5's entries and 18 more orders. Per person in the room, S5 converts 4.2 times better.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the three curved arrows all start at entries: change that one count's definition and three numbers move</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The stage definitions, each with its denominator<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Stage</th><th>Numerator / denominator</th><th>The question it answers</th><th>Whose work it grades</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Stop</strong></td><td>room entries / live card impressions</td><td>Did the cover pull people in from the feed?</td><td>Traffic ops, the brand's set-up, the face on the card</td></tr>
+            <tr><td><strong>Hold</strong></td><td>completers / room entries</td><td>Did the room keep the people it got?</td><td>The host, minute by minute</td></tr>
+            <tr><td><strong>Love</strong></td><td>replays / room entries</td><td>Did anyone come back or watch the replay?</td><td>The host and the content team</td></tr>
+            <tr><td><strong>Buy, click rate</strong></td><td>product card clicks / product card impressions</td><td>When a card was shown, was it tapped?</td><td>The host's ask, the assortment</td></tr>
+            <tr><td><strong>Buy, click to order</strong></td><td>orders / product card clicks</td><td>Once tapped, did it sell?</td><td>Price, stock, the product page</td></tr>
+            <tr><td><strong>North Star</strong></td><td>orders / room entries</td><td>Of the people in the room, how many bought?</td><td>The whole room, with reach taken out</td></tr>
+          </tbody>
+        </table>
+        <p>Buy is two ratios because a card can fail in two places: nobody taps it, or people tap it and do not buy. Its first denominator is not entries. Product card impressions fire every time a card is shown in the room, so a host who shows the card often gets more chances to be tapped, and the click rate grades what happened on each showing. Add to cart sits in the minute table too, and stays a diagnostic rather than a stage: it tells you where between the click and the order the sale died.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Hold's constructed rule, and why it has to be one rule<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A completer, on Pasar Live, is a viewer who <strong>stays past minute 10</strong>. The rule is constructed for this story, and so is every rule like it on a real channel: somebody picked the minute. Hold then divides completers by <strong>room entries</strong>, every person who walked in, including the ones who left in the first ten seconds. That is the point of the ratio. Divide by the viewers still present at minute 10 instead and Hold becomes close to 100 percent by construction, because you have counted only the survivors.</p>
+        <p>The enabler's twist is that Serai scores many brands' streams on one sheet, and their streams do not look alike. A 30-minute flash sale and a three-hour brand night both meet the same minute-10 line, and that is fine as long as it is the same line for every stream and the sheet says so. The moment one brand team counts "stayed past 5 minutes" because its streams are short, Hold stops being comparable across brands and nobody can see it. Write the rule once, in the stage dictionary, and let every report import it.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why not one denominator for everything<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A single "orders per live card impression" would be tidy and would grade the wrong people. It folds Stop into the result, so the host with the famous face wins before saying a word. That number is fair for the traffic team, who own the impression, and unfair for a brand's product expert, who owns the room.</p>
+        <p>Each stage divides by the count the previous team handed over. Traffic hands over impressions, the card turns them into entries, the host turns entries into completers and clicks, the product page turns clicks into orders. A denominator is a handover. Choosing one is choosing which team's output you start counting from, which is why the stage dictionary is a cross-team document before it is code.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Two brand teams, two Holds, one stream shape (constructed).</strong> In Serai's first month on Pasar Live, one brand team divided completers by room entries and another divided them by the viewers present at minute 10. The second team's host looked like the best on the channel for three weeks. Nothing in the dashboard was wrong except the slash, and the fix was not a better chart but one line in a shared dictionary. The case is constructed; the failure is the most common one in any multi-team funnel.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the averaging trap</span>
+      <h2>Ratio of sums or mean of ratios</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Ask "what is Pasar Live's conversion" of the constructed eight-stream table and you can get two honest answers from the same rows. Add up all orders and divide by all entries: <strong>437 / 45,720 = 0.96 percent</strong>. Or compute each stream's conversion and average the eight: <strong>1.71 percent</strong>. Neither is a mistake. Printing either one without saying which is.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 368" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eight hand-drawn circles, one per constructed Pasar Live stream, with area proportional to room entries. Platform streams S1 to S4 are large: 9,600, 8,330, 11,880 and 9,020 entries, converting 0.65, 0.70, 0.60 and 0.60 percent. Brand streams S5 to S8 are small: 1,600, 1,400, 2,130 and 1,760 entries, converting 2.75, 2.93, 2.82 and 2.67 percent. Below, a conversion axis from 0 to 3 percent with the eight rates as dots and two markers: ratio of sums 0.96 percent, 437 orders over 45,720 entries, and mean of ratios 1.71 percent.">
+        <defs>
+          <filter id="b5bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b5bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b5bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b5bH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5bL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5bS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b5bB { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #0A4D48; }
+          .b5bV { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #8A2330; }
+          .b5bA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b5bN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b5bH" x="30" y="26">EIGHT ROOMS, SIZED BY ENTRIES</text>
+        <text class="b5bS" x="260" y="26">constructed · circle area = room entries · label = entries, then conversion</text>
+
+        <g filter="url(#b5bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- magnifier doodle -->
+          <circle cx="836" cy="20" r="8"/>
+          <path d="M842 26 L850 34"/>
+          <!-- rooms -->
+          <circle cx="94" cy="118" r="54" fill="url(#b5bHc)"/>
+          <circle cx="220" cy="118" r="50" fill="url(#b5bHc)"/>
+          <circle cx="352" cy="118" r="60" fill="url(#b5bHc)"/>
+          <circle cx="487" cy="118" r="52" fill="url(#b5bHc)"/>
+          <circle cx="583" cy="118" r="22" fill="#FDF1EF"/>
+          <circle cx="648" cy="118" r="21" fill="#FDF1EF"/>
+          <circle cx="716" cy="118" r="25" fill="#FDF1EF"/>
+          <circle cx="786" cy="118" r="23" fill="#FDF1EF"/>
+          <!-- axis -->
+          <path d="M80 300 L810 300" marker-end="url(#b5bAr)"/>
+          <path d="M80 295 L80 305"/>
+          <path d="M320 295 L320 305"/>
+          <path d="M560 295 L560 305"/>
+          <path d="M800 295 L800 305"/>
+          <!-- stream dots -->
+          <circle cx="224" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="236" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="248" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="721" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="740" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="757" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <circle cx="783" cy="300" r="4" fill="#BE3745" stroke="#BE3745"/>
+          <!-- the two averages -->
+          <path d="M310 276 L310 296" stroke="#0E6F68" stroke-width="3"/>
+          <path d="M490 276 L490 296" stroke="#8A2330" stroke-width="3" stroke-dasharray="5 4"/>
+        </g>
+
+        <text class="b5bL" x="84" y="122">S1</text>
+        <text class="b5bL" x="210" y="122">S2</text>
+        <text class="b5bL" x="342" y="122">S3</text>
+        <text class="b5bL" x="477" y="122">S4</text>
+        <text class="b5bL" x="574" y="122">S5</text>
+        <text class="b5bL" x="639" y="122">S6</text>
+        <text class="b5bL" x="707" y="122">S7</text>
+        <text class="b5bL" x="777" y="122">S8</text>
+
+        <text class="b5bS" x="94" y="198" text-anchor="middle">9,600</text>
+        <text class="b5bV" x="94" y="212" text-anchor="middle">0.65%</text>
+        <text class="b5bS" x="220" y="198" text-anchor="middle">8,330</text>
+        <text class="b5bV" x="220" y="212" text-anchor="middle">0.70%</text>
+        <text class="b5bS" x="352" y="198" text-anchor="middle">11,880</text>
+        <text class="b5bV" x="352" y="212" text-anchor="middle">0.60%</text>
+        <text class="b5bS" x="487" y="198" text-anchor="middle">9,020</text>
+        <text class="b5bV" x="487" y="212" text-anchor="middle">0.60%</text>
+        <text class="b5bS" x="583" y="198" text-anchor="middle">1,600</text>
+        <text class="b5bV" x="583" y="212" text-anchor="middle">2.75%</text>
+        <text class="b5bS" x="648" y="198" text-anchor="middle">1,400</text>
+        <text class="b5bV" x="648" y="212" text-anchor="middle">2.93%</text>
+        <text class="b5bS" x="716" y="198" text-anchor="middle">2,130</text>
+        <text class="b5bV" x="716" y="212" text-anchor="middle">2.82%</text>
+        <text class="b5bS" x="786" y="198" text-anchor="middle">1,760</text>
+        <text class="b5bV" x="786" y="212" text-anchor="middle">2.67%</text>
+
+        <text class="b5bS" x="286" y="232" text-anchor="middle">platform hosts · 38,830 entries</text>
+        <text class="b5bS" x="684" y="232" text-anchor="middle">brand hosts · 6,890</text>
+
+        <text class="b5bA" x="80" y="288">orders per room entry</text>
+        <text class="b5bB" x="310" y="256" text-anchor="middle">ratio of sums 0.96%</text>
+        <text class="b5bS" x="310" y="270" text-anchor="middle">437 / 45,720 · the channel</text>
+        <text class="b5bV" x="490" y="256" text-anchor="middle">mean of ratios 1.71%</text>
+        <text class="b5bS" x="490" y="270" text-anchor="middle">8 rates / 8 · the typical stream</text>
+
+        <text class="b5bS" x="80" y="318" text-anchor="middle">0%</text>
+        <text class="b5bS" x="320" y="318" text-anchor="middle">1%</text>
+        <text class="b5bS" x="560" y="318" text-anchor="middle">2%</text>
+        <text class="b5bS" x="800" y="318" text-anchor="middle">3%</text>
+        <text class="b5bS" x="236" y="336" text-anchor="middle">four platform rooms, 0.60 to 0.70%</text>
+        <text class="b5bS" x="750" y="336" text-anchor="middle">four brand rooms, 2.67 to 2.93%</text>
+
+        <text class="b5bN" x="30" y="358">Big rooms hold 85 percent of entries and pull the pooled number down. The mean gives each room one vote.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - no stream converts at 0.96 or 1.71 percent: both are summaries of a mix, and the mix is two host types</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Two numbers, two questions<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Ratio of sums, 0.96 percent,</strong> answers the channel's question: of every person who walked into a Pasar Live room Serai ran, how many ordered? It weights every stream by its entries, so the four platform rooms, holding 38,830 of the 45,720 entries, set most of the answer. Finance, the brand's quarterly review and anything that multiplies by traffic want this one.</li>
+          <li><strong>Mean of ratios, 1.71 percent,</strong> answers the typical stream's question: if you pick one of these eight streams, how does it tend to convert? Every stream gets one vote, whatever its size. A host coach planning next week, or a brand asking "what should a normal stream of ours do", wants this one.</li>
+        </ul>
+        <p>The rule is short: <strong>say which, every time</strong>. Put "pooled" or "average of streams" in the column name, not in a footnote. The two can differ by almost a factor of two on the same eight rows, and the reader cannot tell from the number which one you meant.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Pool within host type, and the gap disappears<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Split the eight streams by host type and compute both averages inside each group. In the build-along below, the code prints the same value both ways for each type: platform <strong>0.63 percent</strong> either way, brand <strong>2.79 percent</strong> either way. Inside a host type the rooms are similar in size and in conversion, so the weighting hardly matters. The whole gap between 0.96 and 1.71 came from mixing two populations that behave differently.</p>
+        <p>That is the practical rule for a scorecard: pool with the ratio of sums, and pool within the groups that are meant to be compared, host type first. A channel-wide number is still worth printing for the channel's own question. It is not a benchmark for any host.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where each average misleads<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The ratio of sums can be captured by one room. Add a single platform stream with ten times S3's traffic to the table and the channel's conversion would sit almost exactly on that one stream's rate, whatever the other eight did. When one row dominates the denominator, a pooled number is mostly a report on that row.</p>
+        <p>The mean of ratios has the opposite weakness: a tiny room gets the same vote as a huge one. A hypothetical test stream with 40 entries and 3 orders would convert at 7.5 percent and pull the mean up on its own. The usual defence is a minimum room size for a stream to count in the mean, and that threshold is one more definition to write down once. Both failure modes are why the stage dictionary carries the aggregation rule next to the ratio. Breaking a metric into its parts to see which one moved is taught in the <a href="https://phoebefu6.github.io/learn-metric-decomposition-with-phoebe/">metric decomposition course</a>.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Every headline number is a choice of numerator and denominator.</strong> Sea Limited's annual report for fiscal 2019 defines Shopee's GMV as the value of orders on the marketplace and says its calculation "includes shipping and other charges"; an order counts "regardless of whether the transaction is settled or if the item is returned". That is a listed company writing its choices down in public, which is the whole lesson of this Part at the scale of a stage ratio: the definition is part of the number. Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions. How an enabler's own GMV should be defined is taught in the <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a1-the-gmv-equation.html">ecommerce metrics course</a>, and session 7 writes it into the registry.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers host comparison across brands</span>
+      <h2>GMV ranks the rooms, the North Star ranks the hosts</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">Sort the eight constructed streams by orders and the platform hosts win: <strong>245 orders against 192</strong>. Sort them by the North Star and the brand hosts win: <strong>2.79 percent against 0.63</strong>, 4.4 times better per person in the room. Both sorts are correct arithmetic. Only one of them is about the host.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two hand-drawn ranked columns of the eight constructed streams joined by crossing lines. Left, ranked by orders: S3 71, S1 62, S7 60, S2 58, S4 54, S8 47, S5 44, S6 41. Right, ranked by North Star: S6 2.93 percent, S7 2.82, S5 2.75, S8 2.67, S2 0.70, S1 0.65, S4 0.60, S3 0.60. S3 goes from first to last, drawn in teal. Every brand stream moves up.">
+        <defs>
+          <filter id="b5cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="47" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b5cHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b5cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b5cH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5cL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5cS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b5cV { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #8A2330; }
+          .b5cW { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #FFFFFF; }
+          .b5cN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b5cH" x="30" y="26">SAME EIGHT STREAMS, TWO RANKINGS</text>
+        <text class="b5cS" x="290" y="26">constructed · white = platform host · pink = brand host · your numbers will differ</text>
+
+        <text class="b5cH" x="120" y="56">RANKED BY ORDERS</text>
+        <text class="b5cS" x="120" y="72">how a GMV-only table ranks them</text>
+        <text class="b5cH" x="580" y="56">RANKED BY NORTH STAR</text>
+        <text class="b5cS" x="580" y="72">orders per room entry</text>
+
+        <g filter="url(#b5cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- trophy doodle -->
+          <path d="M60 50 L80 50 L78 64 C76 70 64 70 62 64 Z"/>
+          <path d="M70 70 L70 78 M63 80 L77 80"/>
+          <!-- left column -->
+          <rect x="120" y="84" width="180" height="26" rx="6" transform="rotate(-0.8 210 97)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="120" y="118" width="180" height="26" rx="6" transform="rotate(0.6 210 131)" fill="#FFFFFF"/>
+          <rect x="120" y="152" width="180" height="26" rx="6" transform="rotate(-0.5 210 165)" fill="#FDF1EF"/>
+          <rect x="120" y="186" width="180" height="26" rx="6" transform="rotate(0.7 210 199)" fill="#FFFFFF"/>
+          <rect x="120" y="220" width="180" height="26" rx="6" transform="rotate(-0.6 210 233)" fill="#FFFFFF"/>
+          <rect x="120" y="254" width="180" height="26" rx="6" transform="rotate(0.5 210 267)" fill="#FDF1EF"/>
+          <rect x="120" y="288" width="180" height="26" rx="6" transform="rotate(-0.7 210 301)" fill="#FDF1EF"/>
+          <rect x="120" y="322" width="180" height="26" rx="6" transform="rotate(0.6 210 335)" fill="#FDF1EF"/>
+          <!-- right column -->
+          <rect x="580" y="84" width="180" height="26" rx="6" transform="rotate(0.7 670 97)" fill="#FDF1EF"/>
+          <rect x="580" y="118" width="180" height="26" rx="6" transform="rotate(-0.6 670 131)" fill="#FDF1EF"/>
+          <rect x="580" y="152" width="180" height="26" rx="6" transform="rotate(0.5 670 165)" fill="#FDF1EF"/>
+          <rect x="580" y="186" width="180" height="26" rx="6" transform="rotate(-0.7 670 199)" fill="#FDF1EF"/>
+          <rect x="580" y="220" width="180" height="26" rx="6" transform="rotate(0.6 670 233)" fill="#FFFFFF"/>
+          <rect x="580" y="254" width="180" height="26" rx="6" transform="rotate(-0.5 670 267)" fill="#FFFFFF"/>
+          <rect x="580" y="288" width="180" height="26" rx="6" transform="rotate(0.8 670 301)" fill="#FFFFFF"/>
+          <rect x="580" y="322" width="180" height="26" rx="6" transform="rotate(-0.6 670 335)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- crossing lines, left rank to right rank -->
+          <path d="M304 131 C440 131 440 267 576 267" stroke="#6B5256"/>
+          <path d="M304 165 C440 165 440 131 576 131" stroke="#6B5256"/>
+          <path d="M304 199 C440 199 440 233 576 233" stroke="#6B5256"/>
+          <path d="M304 233 C440 233 440 301 576 301" stroke="#6B5256"/>
+          <path d="M304 267 C440 267 440 199 576 199" stroke="#6B5256"/>
+          <path d="M304 301 C440 301 440 165 576 165" stroke="#6B5256"/>
+          <path d="M304 335 C440 335 440 97 576 97" stroke="#6B5256"/>
+          <path d="M304 97 C440 97 440 335 576 335" stroke="#0E6F68" stroke-width="3.2" marker-end="url(#b5cAr)"/>
+        </g>
+
+        <text class="b5cW" x="130" y="102">1 · S3 platform</text>
+        <text class="b5cW" x="290" y="102" text-anchor="end">71</text>
+        <text class="b5cL" x="130" y="136">2 · S1 platform</text>
+        <text class="b5cV" x="290" y="136" text-anchor="end">62</text>
+        <text class="b5cL" x="130" y="170">3 · S7 brand</text>
+        <text class="b5cV" x="290" y="170" text-anchor="end">60</text>
+        <text class="b5cL" x="130" y="204">4 · S2 platform</text>
+        <text class="b5cV" x="290" y="204" text-anchor="end">58</text>
+        <text class="b5cL" x="130" y="238">5 · S4 platform</text>
+        <text class="b5cV" x="290" y="238" text-anchor="end">54</text>
+        <text class="b5cL" x="130" y="272">6 · S8 brand</text>
+        <text class="b5cV" x="290" y="272" text-anchor="end">47</text>
+        <text class="b5cL" x="130" y="306">7 · S5 brand</text>
+        <text class="b5cV" x="290" y="306" text-anchor="end">44</text>
+        <text class="b5cL" x="130" y="340">8 · S6 brand</text>
+        <text class="b5cV" x="290" y="340" text-anchor="end">41</text>
+
+        <text class="b5cL" x="590" y="102">1 · S6 brand</text>
+        <text class="b5cV" x="750" y="102" text-anchor="end">2.93%</text>
+        <text class="b5cL" x="590" y="136">2 · S7 brand</text>
+        <text class="b5cV" x="750" y="136" text-anchor="end">2.82%</text>
+        <text class="b5cL" x="590" y="170">3 · S5 brand</text>
+        <text class="b5cV" x="750" y="170" text-anchor="end">2.75%</text>
+        <text class="b5cL" x="590" y="204">4 · S8 brand</text>
+        <text class="b5cV" x="750" y="204" text-anchor="end">2.67%</text>
+        <text class="b5cL" x="590" y="238">5 · S2 platform</text>
+        <text class="b5cV" x="750" y="238" text-anchor="end">0.70%</text>
+        <text class="b5cL" x="590" y="272">6 · S1 platform</text>
+        <text class="b5cV" x="750" y="272" text-anchor="end">0.65%</text>
+        <text class="b5cL" x="590" y="306">7 · S4 platform</text>
+        <text class="b5cV" x="750" y="306" text-anchor="end">0.60%</text>
+        <text class="b5cW" x="590" y="340">8 · S3 platform</text>
+        <text class="b5cW" x="750" y="340" text-anchor="end">0.60%</text>
+
+        <text class="b5cN" x="30" y="374">The biggest room tops the orders table and finishes last per entry. All four brand streams move up.</text>
+        <text class="b5cN" x="30" y="392">Pooled: platform 245 orders at 0.63%, brand 192 at 2.79%. No prices here, so orders stand in for GMV.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - every line that crosses is a host whose coaching conversation changes when the denominator does</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why orders rank the room, not the host<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Orders are entries times conversion. Entries come mostly from work the host did not do: the traffic push, the slot, the brand's following, the face on the card. S3 had the biggest room of the eight, 11,880 entries, and sold the most, 71 orders, while converting at 0.60 percent, the lowest on the table (S3 and S4 both print 0.60; S3 is lower in the third decimal). A GMV-only table books S3's host into prime slots, which makes the room bigger, which makes the GMV bigger. The loop feeds itself and never asks whether the host sold.</p>
+        <p>The North Star divides the room out. It is not "better" than orders; it answers a different question. Orders answer "which room made money", and the brand's finance team is right to ask it. The North Star answers "who turns a room into buyers", and that is the question a host scorecard exists for.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Fair comparison across brands: within first, across only with a label<span class="mini">1 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Serai sees what no single brand sees: many brands' streams on one channel. That is the value and the trap. A beauty brand's host and a kitchenware brand's host face different baskets, prices and buyers; a platform host and a brand host face different rooms. The practice for a fair host comparison:</p>
+        <ol>
+          <li><strong>Compare within host type and within brand first.</strong> Rank a brand's hosts against each other, then platform hosts against platform hosts.</li>
+          <li><strong>Across brands, stay within a category</strong>, and pool with the ratio of sums inside it.</li>
+          <li><strong>Never rank across host type, brand or category without saying so on the chart.</strong> "Across host types" is a legitimate view for the channel; it is not a verdict on a person.</li>
+        </ol>
+        <p>Holding brand and category fixed properly, rather than by splitting the table, is a fixed-effects model and belongs to the live commerce analytics course linked at the top of the page.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The scorecard as the thing Serai sells<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A brand running its own streams sees its own rooms. Serai, running streams for 12 brands on Pasar Live (constructed), can tell a brand what a normal Hold looks like for a brand host in its category, which stage its host is losing, and which minute the room drained. That per-host scorecard, pooled within host type and category, with every stage's denominator on the sheet, is a service line, not a report. It is the "knowing" that the leader track prices.</p>
+        <p>It only sells if it survives the brand manager's first question: "why does my host rank seventh?" The answer has to be one sentence about a named ratio and a named comparison group, for example "your host's Hold is below the pooled Hold for brand hosts in your category, and here is the minute the room drained", and never "the model says so". Every scorecard row should carry its comparison group as a column. Benchmarks across brands also carry an obligation: show a brand only pooled figures from others, never another brand's own rows.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The swap request (constructed).</strong> After a quarter of GMV-only weekly reports, one of Serai's brands asked to replace its own host with a platform host, because the platform hosts' streams "sold more". The analyst's reply was the two columns in the figure: the platform streams sold more because they had about 5.6 times the entries (38,830 against 6,890), and the brand's host converted the people in her room 4.4 times better. The brand kept its host and bought a traffic push for her slot instead. The story is constructed; the arithmetic is the eight-stream table above.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>The scorecard in pandas and SQL</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Eight rows, ten columns, constructed. Build the stream table, write the stage dictionary once, pool by host type with the ratio of sums, print both averages, rank the streams two ways, then run the same pooled scorecard in SQL through duckdb. Every output below is what the code printed when run on pandas 2.1 and duckdb 1.5; the data is constructed, so on your own channel your numbers will differ.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline of four boxes left to right. Events, one row per fire: entry, card impression, click, add to cart, order. Minute table, keyed by stream id, minute and SKU, built in session 4. Stream table, one row per stream, eight rows, where tonight starts. Host scorecard, in teal: sum by host type, then divide once. Under the arrows: sum per minute, sum per stream, sum per host type. A red panel warns that averaging per-stream rates upward gives the typical stream, 1.71 percent, not the channel.">
+        <defs>
+          <filter id="b5dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="59" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b5dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b5dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b5dH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5dL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b5dS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b5dA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b5dW { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #FFFFFF; }
+          .b5dR { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #991B1B; }
+          .b5dN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b5dH" x="30" y="26">SUM ALL THE WAY UP, DIVIDE ONCE AT THE TOP</text>
+
+        <g filter="url(#b5dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="50" width="180" height="110" rx="10" transform="rotate(-0.6 120 105)" fill="url(#b5dHc)"/>
+          <rect x="250" y="50" width="180" height="110" rx="10" transform="rotate(0.5 340 105)" fill="#FDF1EF"/>
+          <rect x="470" y="50" width="180" height="110" rx="10" transform="rotate(-0.4 560 105)" fill="#FFFFFF"/>
+          <rect x="690" y="50" width="170" height="110" rx="10" transform="rotate(0.6 775 105)" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M214 105 L244 105" marker-end="url(#b5dAr)"/>
+          <path d="M434 105 L464 105" marker-end="url(#b5dAr)"/>
+          <path d="M654 105 L684 105" marker-end="url(#b5dAr)"/>
+          <!-- clock doodle -->
+          <circle cx="190" cy="68" r="9" fill="#FFFFFF"/>
+          <path d="M190 62 L190 68 L195 71"/>
+          <!-- wrong way panel -->
+          <rect x="450" y="208" width="410" height="40" rx="8" transform="rotate(-0.3 655 228)" fill="#FEF2F2" stroke="#FCA5A5"/>
+        </g>
+
+        <text class="b5dL" x="44" y="74">Events</text>
+        <text class="b5dS" x="44" y="94">one row per fire</text>
+        <text class="b5dS" x="44" y="112">entry, card impr, click,</text>
+        <text class="b5dS" x="44" y="128">add to cart, order</text>
+
+        <text class="b5dL" x="264" y="74">Minute table</text>
+        <text class="b5dS" x="264" y="94">stream_id + minute + sku</text>
+        <text class="b5dS" x="264" y="112">counts per minute</text>
+        <text class="b5dS" x="264" y="128">built in session 4</text>
+
+        <text class="b5dL" x="484" y="74">Stream table</text>
+        <text class="b5dS" x="484" y="94">one row per stream</text>
+        <text class="b5dS" x="484" y="112">8 rows, 10 columns</text>
+        <text class="b5dS" x="484" y="128">tonight starts here</text>
+
+        <text class="b5dW" x="704" y="74">Host scorecard</text>
+        <text class="b5dW" x="704" y="98">sum by host type,</text>
+        <text class="b5dW" x="704" y="116">then divide, once</text>
+        <text class="b5dW" x="704" y="140">0.63% · 2.79%</text>
+
+        <text class="b5dA" x="229" y="184" text-anchor="middle">sum per minute</text>
+        <text class="b5dA" x="449" y="184" text-anchor="middle">sum per stream</text>
+        <text class="b5dA" x="669" y="184" text-anchor="middle">sum per host type</text>
+
+        <text class="b5dR" x="466" y="232">wrong way: average the 8 rates = 1.71%, not the channel</text>
+
+        <text class="b5dN" x="30" y="270">Counts add; rates do not. Keep every level as counts and let the scorecard be the only place a slash appears.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the stage dictionary is applied once, at the grain you report, never averaged on the way up</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Build the stream table from the constructed eight-stream table.</strong> In production this is the minute table from session 4, summed by stream. Keep it as counts: every column is something that fired and can be added.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · eight streams, constructed</span>import pandas as pd
+
+cols = ["stream", "host", "impr", "entries", "completers", "replays",
+        "card_impr", "clicks", "atc", "orders"]
+rows = [
+    ("S1", "platform", 120_000, 9_600, 1_150, 290, 8_200, 410, 150, 62),
+    ("S2", "platform",  98_000, 8_330, 1_080, 250, 7_100, 390, 140, 58),
+    ("S3", "platform", 135_000, 11_880, 1_310, 300, 10_100, 480, 170, 71),
+    ("S4", "platform", 110_000, 9_020,   990, 260, 7_600, 370, 128, 54),
+    ("S5", "brand",     40_000, 1_600,   520, 140, 1_500, 190,  88, 44),
+    ("S6", "brand",     36_000, 1_400,   480, 120, 1_300, 170,  80, 41),
+    ("S7", "brand",     52_000, 2_130,   700, 190, 2_000, 260, 118, 60),
+    ("S8", "brand",     45_000, 1_760,   590, 150, 1_650, 205,  96, 47),
+]
+streams = pd.DataFrame(rows, columns=cols)
+print(streams.shape)
+print(streams.groupby("host")[["entries", "orders"]].sum())
+# (8, 10)
+#           entries  orders
+# host
+# brand        6890     192
+# platform    38830     245</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the stage dictionary once, then compute every stage per stream.</strong> Each stage is a name, a numerator and a denominator, in one place. The function divides; nothing else in the codebase is allowed to.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · the stage dictionary</span>STAGES = {                      # name: (numerator, denominator)
+    "stop":       ("entries",    "impr"),
+    "hold":       ("completers", "entries"),
+    "love":       ("replays",    "entries"),
+    "click_rate": ("clicks",     "card_impr"),
+    "click_to_order": ("orders", "clicks"),
+    "north_star": ("orders",     "entries"),
+}
+
+def rates(df):
+    out = df[[c for c in ("stream", "host") if c in df]].copy()
+    for name, (num, den) in STAGES.items():
+        out[name] = (df[num] / df[den] * 100).round(2)
+    return out
+
+per_stream = rates(streams)
+print(per_stream.to_string(index=False))
+# stream     host  stop  hold  love  click_rate  click_to_order  north_star
+#     S1 platform  8.00 11.98  3.02        5.00           15.12        0.65
+#     S2 platform  8.50 12.97  3.00        5.49           14.87        0.70
+#     S3 platform  8.80 11.03  2.53        4.75           14.79        0.60
+#     S4 platform  8.20 10.98  2.88        4.87           14.59        0.60
+#     S5    brand  4.00 32.50  8.75       12.67           23.16        2.75
+#     S6    brand  3.89 34.29  8.57       13.08           24.12        2.93
+#     S7    brand  4.10 32.86  8.92       13.00           23.08        2.82
+#     S8    brand  3.91 33.52  8.52       12.42           22.93        2.67</div>
+      </div>
+      <div class="step">
+        <p><strong>Pool by host type with the ratio of sums.</strong> Sum the counts first, divide second, and reuse the same function: the pooled scorecard cannot drift from the per-stream one because they share the dictionary.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · the pooled host scorecard</span>counts = [c for c in streams.columns if c not in ("stream", "host")]
+pooled = streams.groupby("host")[counts].sum()     # sum first ...
+print(rates(pooled).to_string())                    # ... divide second
+#           stop   hold  love  click_rate  click_to_order  north_star
+# host
+# brand     3.98  33.24  8.71       12.79           23.27        2.79
+# platform  8.39  11.67  2.83        5.00           14.85        0.63</div>
+      </div>
+      <div class="step">
+        <p><strong>Print both averages, and label them.</strong> The channel's conversion and the typical stream's conversion, side by side, then both again inside each host type. The last table is the argument for pooling within host type.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · two averages, two questions</span>cr = streams["orders"] / streams["entries"]
+ratio_of_sums = streams["orders"].sum() / streams["entries"].sum()
+mean_of_ratios = cr.mean()
+print(f"channel conversion (ratio of sums): {streams['orders'].sum()} / "
+      f"{streams['entries'].sum()} = {ratio_of_sums:.2%}")
+print(f"typical stream (mean of ratios):    {mean_of_ratios:.2%}")
+print(dict(zip(streams["stream"], (cr * 100).round(2))))
+by_host = streams.assign(cr=cr).groupby("host").agg(
+    orders=("orders", "sum"), entries=("entries", "sum"), mean_of_ratios=("cr", "mean"))
+by_host["ratio_of_sums"] = by_host["orders"] / by_host["entries"]
+print((by_host[["ratio_of_sums", "mean_of_ratios"]] * 100).round(2))
+# channel conversion (ratio of sums): 437 / 45720 = 0.96%
+# typical stream (mean of ratios):    1.71%
+# {'S1': 0.65, 'S2': 0.7, 'S3': 0.6, 'S4': 0.6, 'S5': 2.75, 'S6': 2.93, 'S7': 2.82, 'S8': 2.67}
+#           ratio_of_sums  mean_of_ratios
+# host
+# brand              2.79            2.79
+# platform           0.63            0.63</div>
+      </div>
+      <div class="step">
+        <p><strong>Rank the streams by orders and by the North Star.</strong> Rank on the unrounded rate, so S3 and S4, which both print 0.60, still sort correctly.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · two rankings</span>board = per_stream[["stream", "host", "north_star"]].assign(orders=streams["orders"])
+board["rank_orders"] = board["orders"].rank(ascending=False, method="first").astype(int)
+board["rank_ns"] = (streams["orders"] / streams["entries"]).rank(
+    ascending=False, method="first").astype(int)
+print(board.sort_values("rank_orders").to_string(index=False))
+# stream     host  north_star  orders  rank_orders  rank_ns
+#     S3 platform        0.60      71            1        8
+#     S1 platform        0.65      62            2        6
+#     S7    brand        2.82      60            3        2
+#     S2 platform        0.70      58            4        5
+#     S4 platform        0.60      54            5        7
+#     S8    brand        2.67      47            6        4
+#     S5    brand        2.75      44            7        3
+#     S6    brand        2.93      41            8        1</div>
+      </div>
+      <div class="step">
+        <p><strong>Run the same pooled scorecard in SQL.</strong> Most brand teams will read this through a warehouse view, not a notebook. In SQL the ratio of sums is <code>SUM(x) / SUM(y)</code> and the mean of ratios is <code>AVG(x / y)</code>: one bracket apart, which is why the column name has to say which. <code>pip install duckdb</code> if you do not have it; with sqlite3 from the standard library, load the table with <code>streams.to_sql("streams", con)</code> and the same query runs unchanged.</p>
+        <div class="prompt-box good"><span class="label">★ Step 6 · the same scorecard in SQL</span>import duckdb
+
+con = duckdb.connect()
+con.register("streams", streams)
+print(con.sql("""
+    SELECT host,
+           CAST(SUM(orders) AS INT)                           AS orders,
+           ROUND(100.0 * SUM(entries)    / SUM(impr), 2)      AS stop,
+           ROUND(100.0 * SUM(completers) / SUM(entries), 2)   AS hold,
+           ROUND(100.0 * SUM(replays)    / SUM(entries), 2)   AS love,
+           ROUND(100.0 * SUM(clicks)     / SUM(card_impr), 2) AS click_rate,
+           ROUND(100.0 * SUM(orders)     / SUM(clicks), 2)    AS click_to_order,
+           ROUND(100.0 * SUM(orders)     / SUM(entries), 2)   AS north_star
+    FROM streams
+    GROUP BY host
+    ORDER BY north_star DESC
+""").fetchdf().to_string(index=False))
+print(con.sql("""
+    SELECT ROUND(100.0 * SUM(orders) / SUM(entries), 2) AS ratio_of_sums,
+           ROUND(AVG(100.0 * orders / entries), 2)      AS mean_of_ratios
+    FROM streams
+""").fetchall())
+#     host  orders  stop  hold  love  click_rate  click_to_order  north_star
+#    brand     192  3.98 33.24  8.71       12.79           23.27        2.79
+# platform     245  8.39 11.67  2.83        5.00           14.85        0.63
+# [(0.96, 1.71)]</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Keep the stage dictionary in the estate registry.</strong> Session 1's registry declared tables and grains; the stage dictionary is its first metric entry, and session 7 turns both into a registry with tests. If the SQL view and the notebook each carry their own copy of Hold, they will disagree the week somebody changes the minute-10 rule in one of them.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 6</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Find three rate metrics on a dashboard you use weekly. For each, write the numerator, the denominator, and whether the total row is a ratio of sums or a mean of ratios. If the dashboard does not say, find out from the query.</li>
+      <li>Add a ninth, constructed stream to the table: a platform host with 30,000 entries converting at 0.50 percent. Re-run steps 3 and 4 and write one sentence on what happened to each average, and why.</li>
+      <li>Add a <code>brand</code> and a <code>category</code> column to the stream table (invent them) and change step 3 to pool by host type within category. Print a scorecard where every row carries its comparison group.</li>
+      <li>Write the one-sentence answer you would give a brand manager whose host ranks last on the North Star but first on orders. Name the ratio and the comparison group.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 5 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · On the constructed eight streams, conversion is 0.96 percent as a ratio of sums and 1.71 percent as a mean of the eight rates. Which question does each answer?</p>
+      <button class="qopt" type="button">A · 0.96 percent is the typical stream; 1.71 percent is the channel</button>
+      <button class="qopt" type="button">B · Both answer the same question; 1.71 percent is simply more accurate because it uses every stream</button>
+      <button class="qopt" type="button">C · 0.96 percent is the channel's conversion, weighted by room size; 1.71 percent is the typical stream's, one vote per stream</button>
+      <button class="qopt" type="button">D · 0.96 percent is wrong because it double-counts entries</button>
+      <p class="qwhy">The ratio of sums divides all orders by all entries, so the four big platform rooms dominate it. The mean of ratios gives every stream one vote. Both are correct arithmetic for different questions, and within each host type they agree, which is why the scorecard pools within host type and names the method.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">2 · Why does a GMV-only table mis-rank Pasar Live's hosts?</p>
+      <button class="qopt" type="button">A · Because GMV includes shipping</button>
+      <button class="qopt" type="button">B · Because platform hosts sell cheaper products</button>
+      <button class="qopt" type="button">C · Because orders are counted before returns</button>
+      <button class="qopt" type="button">D · Because GMV scales with the size of the room, which mostly comes from traffic, the slot and the face on the card, not from the host's selling; the North Star divides the room out</button>
+      <p class="qwhy">S3 had the biggest room, 11,880 entries, and the most orders, 71, while converting at 0.60 percent, last of eight. Orders rank the rooms; orders per room entry rank the hosts. The other options may be true of some GMV definition, but none of them explains the ranking.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Pasar Live's Hold counts completers, viewers who stay past minute 10. What does it divide by?</p>
+      <button class="qopt" type="button">A · Live card impressions</button>
+      <button class="qopt" type="button">B · Room entries: everyone who walked in, including those who left in the first seconds</button>
+      <button class="qopt" type="button">C · The viewers still present at minute 10</button>
+      <button class="qopt" type="button">D · Product card impressions</button>
+      <p class="qwhy">Hold grades whether the room kept the people it got, so its denominator is everyone the room got. Dividing by the viewers present at minute 10 counts only survivors and pushes Hold towards 100 percent by construction.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The stage metrics: Stop, Hold, Love, Buy and the North Star</span><span class="note">Pasar Live's constructed naming and definitions, including the minute-10 completer rule; the platform's own version is taught in the live commerce analytics course, linked</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The averaging trap: ratio of sums against mean of ratios</span><span class="note">Computed on the constructed eight-stream table; every printed value from code run in this build (pandas 2.1, duckdb 1.5)</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Fair host comparison across brands and host types</span><span class="note">Practice, not a cited study: compare within host type and brand first, label any comparison across; the modelling is the live commerce course's</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">A headline metric's definition is part of the number</span><span class="note">Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>A slash is a handover</b><span>Every stage names its numerator and denominator; the denominator decides whose work is graded.</span></div>
+      <div class="cheat-item"><b>Hold divides by entries</b><span>Completers (past minute 10, constructed) over everyone who walked in, never over the survivors.</span></div>
+      <div class="cheat-item"><b>Say which average</b><span>Ratio of sums is the channel (0.96%); mean of ratios is the typical stream (1.71%).</span></div>
+      <div class="cheat-item"><b>Pool within groups</b><span>Inside a host type the two averages agree; the gap was the mix.</span></div>
+      <div class="cheat-item"><b>Orders rank rooms</b><span>The North Star ranks hosts. Compare within host type and brand; label anything across.</span></div>
+      <div class="cheat-item"><b>Divide once</b><span>Counts all the way up, one stage dictionary, applied at the grain you report, in pandas and SQL alike.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>You can now score a stream. Session 6 follows the other chain from session 1: content Serai produces, tagged with a persistent id, joined back to the orders it sold, and paid out on settled rather than attributed GMV. It is the same lesson about denominators, with money on the line: which creator actually sells, per follower, once the returns come back.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 5 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b4-per-minute-events.html">← Prev: Per-minute events for a live channel</a> &nbsp;·&nbsp; <a href="b6-content-to-creator-yield.html">Next: Content to creator yield →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

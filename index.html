@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Fourteen sessions on the data roadmap of a social-commerce enabler: what it sells, why its margin is hours removed, what the marketplaces let it keep, and a bench on real orders where the customer join stops at 23.3 percent and the store join holds at 100. Free, by Phoebe Fu.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Ship It: Social Commerce Enablers - Learn with Phoebe">
+<meta property="og:description" content="An enabler owns neither the goods nor the buyer. So its margin is hours removed, its moat is the store and the SKU, and pricing optimisation mostly pays the brand.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ship It: Social Commerce Enablers - Learn with Phoebe">
+<meta name="twitter:description" content="The customer join stops at 23.3 percent. The store join holds at 100. Build the roadmap on the one that holds.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Ship It: Social Commerce Enablers - Learn with Phoebe</title>
+<link rel="stylesheet" href="assets/style.css?v=2">
+<style>
+
+  .stats-row { display: flex; gap: 2.4rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 2.1rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .72rem; opacity: .92; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .course-card {
+    border: 1px solid var(--hairline);
+    border-top: 4px solid var(--diff, var(--indigo));
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    position: relative;
+  }
+  .course-card:hover { border-color: var(--indigo-soft); border-top-color: var(--diff, var(--indigo)); box-shadow: 0 8px 28px rgba(var(--shadow-rgb),.16); transform: translateY(-3px); }
+  .course-card .cicon { font-size: 1.7rem; line-height: 1; }
+  .course-card .cnum { font-size: .72rem; font-weight: 700; color: var(--indigo); text-transform: uppercase; letter-spacing: .1em; }
+  .course-card h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+  .course-card p { font-size: .85rem; color: var(--muted); flex: 1; }
+  .course-card .meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .diff-legend { display: flex; gap: 1rem; margin-top: 1.6rem; font-size: .74rem; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .diff-legend i { display: inline-block; width: .85rem; height: .35rem; border-radius: 999px; margin-right: .35rem; vertical-align: middle; }
+
+  .paths { margin-top: 2.6rem; }
+  .paths h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .paths .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .path { display: flex; gap: .55rem; align-items: center; padding: .75rem 0; border-bottom: .5px solid var(--hairline); flex-wrap: wrap; }
+  .path:last-child { border-bottom: none; }
+  .path b { min-width: 15.5rem; font-size: .9rem; }
+  .path .pstep { background: var(--indigo-50); color: var(--indigo-deep); border-radius: 999px; padding: .16rem .68rem; font-weight: 700; font-size: .8rem; text-decoration: none; transition: all .12s ease; }
+  .path .pstep:hover { background: var(--indigo-deep); color: #fff; }
+  .path .parr { color: var(--muted); font-weight: 700; }
+
+  .mm-section { margin-top: 1.6rem; }
+  .mm-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
+  .mm-section .mm-lede { color: var(--muted); font-size: .92rem; margin-bottom: .4rem; }
+  .mm-wrap { border: 1px solid var(--hairline); border-radius: var(--radius); background: linear-gradient(180deg, #fff, var(--indigo-50)); padding: .6rem; overflow-x: auto; }
+  .mm-svg { width: 100%; height: auto; display: block; max-width: 60rem; margin: 0 auto; min-width: 34rem; }
+  .mm-link { cursor: pointer; text-decoration: none; }
+  .mm-node rect { transition: opacity .15s ease, filter .15s ease; }
+  .mm-node text { pointer-events: none; }
+  .mm-link:hover .mm-node rect { filter: brightness(1.06); }
+  .mm-edge { transition: opacity .15s ease; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn with Phoebe · Let's Ship It End to End</div>
+    <h1>Ship It: <span class="accent">Social Commerce Enablers</span></h1>
+    <p class="sub">A social-commerce enabler runs a brand's stores, content, livestreams, ads and customer service across several marketplaces, and owns neither the goods nor the buyer. That one fact decides its data roadmap. Its margin is the hours it stops spending, so the first use cases to build are the ones that remove work, and the pricing optimisation most roadmaps start with mostly pays the brand. Its moat is real at the store and the SKU, where the keys are its own, and does not exist at the customer, where the marketplaces mask the buyer. Six leader sessions follow Serai Commerce, a fictional enabler, from its money map to a metric registry fit for a listing. Eight analyst sessions build the estate on real Olist orders and end on a bench that measures, pair by pair, which joins survive the masking.</p>
+    <div class="stats-row">
+      <div class="stat"><b data-count="14">14</b><span>sessions, two tracks</span></div>
+      <div class="stat"><b data-count="7">7</b><span>data domains, one estate</span></div>
+      <div class="stat"><b data-count="8614">8614</b><span>real orders on the bench</span></div>
+      <div class="stat"><b>23.3%</b><span>best customer join, measured</span></div>
+      <div class="stat"><b data-count="45">45</b><span>min per session</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Leader track 🛰️ <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· six sessions, no code</span></h2>
+      <p class="plede">For whoever runs, funds or advises an enabler. What it sells, what that decides, what the marketplaces let it keep, and the one-page roadmap a chief executive can fund.</p>
+    </div>
+
+    <div class="course-grid">
+      <a class="course-card" href="courses/a1-what-an-enabler-sells.html" style="--diff:#34D399">
+        <span class="cicon">🧾</span>
+        <span class="cnum">Leader session 1 · start here</span>
+        <h3>What an enabler actually sells</h3>
+        <p>Four businesses on one order, three fee lines with three payers, and a cost base made of hours. The money map every later decision stands on.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span></span>
+      </a>
+      <a class="course-card" href="courses/a2-hours-removed.html" style="--diff:#FBBF24">
+        <span class="cicon">⏳</span>
+        <span class="cnum">Leader session 2</span>
+        <h3>Margin comes from hours removed</h3>
+        <p>On a service-fee model, the use case that removes the most hours pays first. Why pricing optimisation mostly pays the brand, and the setting where that stops being true.</p>
+      </a>
+      <a class="course-card" href="courses/a3-a-channel-nobody-knew.html" style="--diff:#FBBF24">
+        <span class="cicon">🎥</span>
+        <span class="cnum">Leader session 3</span>
+        <h3>A channel nobody knew how to sell on</h3>
+        <p>Pasar Live, a new live channel: from GMV only to Stop, Hold, Love, Buy and a North Star, and how one table got eight teams reading the same numbers.</p>
+      </a>
+      <a class="course-card" href="courses/a4-what-the-platforms-let-you-bank.html" style="--diff:#FB923C">
+        <span class="cicon">🔒</span>
+        <span class="cnum">Leader session 4</span>
+        <h3>What the platforms let you bank</h3>
+        <p>Masked buyers on every marketplace. Why the single customer view is impossible rather than hard, why the store and SKU view works, and how to treat platform terms as a feasibility question.</p>
+      </a>
+      <a class="course-card" href="courses/a5-three-products-one-estate.html" style="--diff:#FB923C">
+        <span class="cicon">🧩</span>
+        <span class="cnum">Leader session 5</span>
+        <h3>Three products from one estate</h3>
+        <p>An internal operating system, brand intelligence, and the knowing packaged for buyers who do not compete with you. Each pays for the next, in that order.</p>
+      </a>
+      <a class="course-card" href="courses/a6-metric-registry-before-ipo.html" style="--diff:#FB923C">
+        <span class="cicon">📒</span>
+        <span class="cnum">Leader session 6</span>
+        <h3>The metric registry before the IPO</h3>
+        <p>GMV, take rate and active brands, defined once, with lineage. The three questions any serious reader of a listing document asks of an operating metric.</p>
+        <span class="meta"><span class="pill amber">the board version</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Analyst track 🔧 <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· eight sessions, Python and SQL</span></h2>
+      <p class="plede">Serai's estate built on real Olist orders, split into three masked marketplace exports. Session 8 runs the identity ladder and the roadmap sequencer in your browser.</p>
+    </div>
+
+    <div class="course-grid">
+      <a class="course-card" href="courses/b1-seven-domains.html" style="--diff:#34D399">
+        <span class="cicon">🗺️</span>
+        <span class="cnum">Analyst session 1 · start here</span>
+        <h3>Seven domains, one enabler estate</h3>
+        <p>The estate by the work that makes it, five words for obtainability, the two chains most of the value hangs on, and a grain check on seven real tables.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span></span>
+      </a>
+      <a class="course-card" href="courses/b2-three-exports-one-schema.html" style="--diff:#FBBF24">
+        <span class="cicon">🔀</span>
+        <span class="cnum">Analyst session 2</span>
+        <h3>Three marketplace exports, one schema</h3>
+        <p>Conform three exports with different names, ids and masking into one order schema, with a platform column and the two mapping tables an enabler owns.</p>
+      </a>
+      <a class="course-card" href="courses/b3-the-identity-gate.html" style="--diff:#FB923C">
+        <span class="cicon">🪪</span>
+        <span class="cnum">Analyst session 3</span>
+        <h3>The identity gate</h3>
+        <p>Which join keys survive masking, at which grain. Pair-based scoring by hand, and why a key that finds every real link can still be worthless.</p>
+      </a>
+      <a class="course-card" href="courses/b4-per-minute-events.html" style="--diff:#FBBF24">
+        <span class="cicon">⏱️</span>
+        <span class="cnum">Analyst session 4</span>
+        <h3>Per-minute events for a live channel</h3>
+        <p>The event spec for Pasar Live: entry, product card impression, click, add to cart and order, per minute, written as a contract with an owner on every field.</p>
+      </a>
+      <a class="course-card" href="courses/b5-stop-hold-love-buy.html" style="--diff:#FB923C">
+        <span class="cicon">🧮</span>
+        <span class="cnum">Analyst session 5</span>
+        <h3>Stop, Hold, Love, Buy as code</h3>
+        <p>Four stage metrics and a North Star computed across many brands' streams, with the denominators that make platform hosts and brand hosts comparable.</p>
+      </a>
+      <a class="course-card" href="courses/b6-content-to-creator-yield.html" style="--diff:#FB923C">
+        <span class="cicon">🏷️</span>
+        <span class="cnum">Analyst session 6</span>
+        <h3>Content to creator yield</h3>
+        <p>A persistent tag on every asset, joined to settled orders, so content and creators are ranked on what sold rather than on what was attributed.</p>
+      </a>
+      <a class="course-card" href="courses/b7-registry-as-code.html" style="--diff:#FB923C">
+        <span class="cicon">📐</span>
+        <span class="cnum">Analyst session 7</span>
+        <h3>The metric registry as code</h3>
+        <p>One definition per metric in a versioned file, with lineage to its source tables, and tests that fail the build when a definition drifts.</p>
+      </a>
+      <a class="course-card" href="courses/b8-the-enabler-bench.html" style="--diff:#F87171">
+        <span class="cicon">🎛️</span>
+        <span class="cnum">Analyst session 8</span>
+        <h3>The enabler bench</h3>
+        <p>8,614 real orders, three masked exports, seven keys, three grains, and a roadmap sequencer gated by what the joins can reach. Break it, and nine use cases stop.</p>
+        <span class="meta"><span class="pill amber">the capstone</span></span>
+      </a>
+    </div>
+
+    <div class="diff-legend">
+      <span><i style="background:#34D399"></i>start here</span>
+      <span><i style="background:#FBBF24"></i>foundations</span>
+      <span><i style="background:#FB923C"></i>hands-on</span>
+      <span><i style="background:#F87171"></i>capstone</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths">
+      <h2>Choose your path 🗺️</h2>
+      <p class="plede">Three doors into the same argument. Both tracks start at their own session 1, because the money map and the estate map are what make the rest arguable.</p>
+      <div class="path"><b>💼 I run or fund an enabler</b>
+        <a class="pstep" href="courses/a1-what-an-enabler-sells.html">L1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a2-hours-removed.html">L2</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a4-what-the-platforms-let-you-bank.html">L4</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a6-metric-registry-before-ipo.html">L6</a>
+        <span style="font-size:.82rem;color:var(--muted)">the money map, the sequencing rule, the moat, the registry</span>
+      </div>
+      <div class="path"><b>🎥 I run the live and creator side</b>
+        <a class="pstep" href="courses/a3-a-channel-nobody-knew.html">L3</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b4-per-minute-events.html">A4</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b5-stop-hold-love-buy.html">A5</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b6-content-to-creator-yield.html">A6</a>
+        <span style="font-size:.82rem;color:var(--muted)">from GMV only to a scored stream and a creator ranked on settled sales</span>
+      </div>
+      <div class="path"><b>🔧 I build the estate</b>
+        <a class="pstep" href="courses/b1-seven-domains.html">A1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b2-three-exports-one-schema.html">A2</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b3-the-identity-gate.html">A3</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b7-registry-as-code.html">A7</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b8-the-enabler-bench.html">A8</a>
+        <span style="font-size:.82rem;color:var(--muted)">the map, the schema, the gate, the registry, then measure it</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Your passport 🎫</h2>
+      <p class="plede">Clear all three quiz questions in a session and it gets stamped. Fourteen stamps across both tracks, and they live in this browser only.</p>
+    </div>
+    <div class="pp-strip"></div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>What is real here 🧾</h2>
+      <p class="plede">A course about which data you can actually have should be exact about which of its own numbers are measured.</p>
+    </div>
+    <table class="clean">
+      <tr><th>Claim</th><th>Status</th></tr>
+      <tr><td>Serai Commerce and Pasar Live</td><td>Fictional. Every Serai figure (48 brands, 220 people, the fee lines, the hour sinks) and every Pasar Live result, including the 3x conversion lift, is constructed and labelled so on the page</td></tr>
+      <tr><td>The 8,614 orders on the bench</td><td>Real, from the public Olist dataset (CC BY-NC-SA 4.0): which customer placed each order, the zip and city on it, the store and SKU on every line. The sample keeps Olist's real 3.0 percent repeat rate</td></tr>
+      <tr><td>The three exports and their masking</td><td>Constructed. The split is seeded; the masking is modelled on the patterns public integrator documentation reports for the marketplaces. Names and phones are synthetic, because Olist publishes neither</td></tr>
+      <tr><td>23.3 percent at customer grain, 100 at store grain, 97.5 at SKU grain</td><td>Measured by the bench in your browser, pair by pair, against the hidden real ids, and matched to the digit by a Python reference run. A break button shuffles the ids and every grain falls to near zero</td></tr>
+      <tr><td>The roadmap sequencer</td><td>Modelled. Every figure comes from one assumptions block on the page, which you can edit. The ordering logic is real arithmetic; the numbers are invented</td></tr>
+      <tr><td>Marketplace buyer masking</td><td>Reported, from public integrator documentation, because the marketplaces' own seller centres sit behind a login. Dates are quoted as reported, and they change often</td></tr>
+      <tr><td>GMV includes shipping; the SEC's three questions for a key metric</td><td>Read at source: Sea Limited's annual report definitions (fiscal 2019), and the SEC's February 2020 guidance on key performance indicators</td></tr>
+    </table>
+  </section>
+
+  <section class="section mm-section">
+    <h2>The knowledge map 🧠</h2>
+    <p class="mm-lede">Both tracks at a glance - hover a session to spotlight its concepts, click any node to jump in.</p>
+    <div class="mm-wrap"><div id="mindmap"></div></div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span>Pairs with <a href="https://phoebefu6.github.io/learn-ship-playbook-with-phoebe/">The Playbook ↗</a> and <a href="https://phoebefu6.github.io/learn-live-commerce-analytics-with-phoebe/">Live Commerce Analytics ↗</a></span>
+  </footer>
+
+</main>
+
+<script>
+window.MINDMAP_DATA = {
+  "title": "Social Commerce\nEnablers",
+  "centerColor": "#8A2330",
+  "sessions": [
+    {
+      "label": "What it sells",
+      "href": "courses/a1-what-an-enabler-sells.html",
+      "color": "#34D399",
+      "concepts": [
+        {
+          "label": "Four models, one order",
+          "href": "courses/a1-what-an-enabler-sells.html"
+        },
+        {
+          "label": "Three fee lines",
+          "href": "courses/a1-what-an-enabler-sells.html"
+        },
+        {
+          "label": "Hours and knowing",
+          "href": "courses/a1-what-an-enabler-sells.html"
+        }
+      ]
+    },
+    {
+      "label": "Hours removed",
+      "href": "courses/a2-hours-removed.html",
+      "color": "#FBBF24",
+      "concepts": [
+        {
+          "label": "Margin is hours removed",
+          "href": "courses/a2-hours-removed.html"
+        },
+        {
+          "label": "Pricing pays the brand",
+          "href": "courses/a2-hours-removed.html"
+        },
+        {
+          "label": "The crossover",
+          "href": "courses/a2-hours-removed.html"
+        }
+      ]
+    },
+    {
+      "label": "A new live channel",
+      "href": "courses/a3-a-channel-nobody-knew.html",
+      "color": "#FBBF24",
+      "concepts": [
+        {
+          "label": "GMV only to four stages",
+          "href": "courses/a3-a-channel-nobody-knew.html"
+        },
+        {
+          "label": "Eight teams, one table",
+          "href": "courses/a3-a-channel-nobody-knew.html"
+        },
+        {
+          "label": "Two kinds of host",
+          "href": "courses/a3-a-channel-nobody-knew.html"
+        }
+      ]
+    },
+    {
+      "label": "What you can bank",
+      "href": "courses/a4-what-the-platforms-let-you-bank.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "Masked buyers",
+          "href": "courses/a4-what-the-platforms-let-you-bank.html"
+        },
+        {
+          "label": "Customer grain: closed",
+          "href": "courses/a4-what-the-platforms-let-you-bank.html"
+        },
+        {
+          "label": "Store and SKU: yours",
+          "href": "courses/a4-what-the-platforms-let-you-bank.html"
+        }
+      ]
+    },
+    {
+      "label": "Three products",
+      "href": "courses/a5-three-products-one-estate.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "The internal OS",
+          "href": "courses/a5-three-products-one-estate.html"
+        },
+        {
+          "label": "Brand intelligence",
+          "href": "courses/a5-three-products-one-estate.html"
+        },
+        {
+          "label": "The knowing, packaged",
+          "href": "courses/a5-three-products-one-estate.html"
+        }
+      ]
+    },
+    {
+      "label": "Metric registry",
+      "href": "courses/a6-metric-registry-before-ipo.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "One definition each",
+          "href": "courses/a6-metric-registry-before-ipo.html"
+        },
+        {
+          "label": "Lineage to source",
+          "href": "courses/a6-metric-registry-before-ipo.html"
+        },
+        {
+          "label": "Three reader questions",
+          "href": "courses/a6-metric-registry-before-ipo.html"
+        }
+      ]
+    },
+    {
+      "label": "Seven domains",
+      "href": "courses/b1-seven-domains.html",
+      "color": "#34D399",
+      "concepts": [
+        {
+          "label": "Obtainability words",
+          "href": "courses/b1-seven-domains.html"
+        },
+        {
+          "label": "Two value chains",
+          "href": "courses/b1-seven-domains.html"
+        },
+        {
+          "label": "The grain check",
+          "href": "courses/b1-seven-domains.html"
+        }
+      ]
+    },
+    {
+      "label": "One schema",
+      "href": "courses/b2-three-exports-one-schema.html",
+      "color": "#FBBF24",
+      "concepts": [
+        {
+          "label": "Conform three exports",
+          "href": "courses/b2-three-exports-one-schema.html"
+        },
+        {
+          "label": "Platform column",
+          "href": "courses/b2-three-exports-one-schema.html"
+        },
+        {
+          "label": "Mapping tables",
+          "href": "courses/b2-three-exports-one-schema.html"
+        }
+      ]
+    },
+    {
+      "label": "Identity gate",
+      "href": "courses/b3-the-identity-gate.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "Pairs, not rows",
+          "href": "courses/b3-the-identity-gate.html"
+        },
+        {
+          "label": "Keys under masking",
+          "href": "courses/b3-the-identity-gate.html"
+        },
+        {
+          "label": "Grain decides",
+          "href": "courses/b3-the-identity-gate.html"
+        }
+      ]
+    },
+    {
+      "label": "Per-minute events",
+      "href": "courses/b4-per-minute-events.html",
+      "color": "#FBBF24",
+      "concepts": [
+        {
+          "label": "Five events a minute",
+          "href": "courses/b4-per-minute-events.html"
+        },
+        {
+          "label": "Spec as a contract",
+          "href": "courses/b4-per-minute-events.html"
+        }
+      ]
+    },
+    {
+      "label": "Stop Hold Love Buy",
+      "href": "courses/b5-stop-hold-love-buy.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "Stage metrics as code",
+          "href": "courses/b5-stop-hold-love-buy.html"
+        },
+        {
+          "label": "The right denominator",
+          "href": "courses/b5-stop-hold-love-buy.html"
+        }
+      ]
+    },
+    {
+      "label": "Creator yield",
+      "href": "courses/b6-content-to-creator-yield.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "The asset tag",
+          "href": "courses/b6-content-to-creator-yield.html"
+        },
+        {
+          "label": "Settled, not attributed",
+          "href": "courses/b6-content-to-creator-yield.html"
+        }
+      ]
+    },
+    {
+      "label": "Registry as code",
+      "href": "courses/b7-registry-as-code.html",
+      "color": "#FB923C",
+      "concepts": [
+        {
+          "label": "Versioned definitions",
+          "href": "courses/b7-registry-as-code.html"
+        },
+        {
+          "label": "Drift tests",
+          "href": "courses/b7-registry-as-code.html"
+        }
+      ]
+    },
+    {
+      "label": "The bench",
+      "href": "courses/b8-the-enabler-bench.html",
+      "color": "#F87171",
+      "concepts": [
+        {
+          "label": "Identity ladder",
+          "href": "courses/b8-the-enabler-bench.html"
+        },
+        {
+          "label": "Roadmap sequencer",
+          "href": "courses/b8-the-enabler-bench.html"
+        },
+        {
+          "label": "The break button",
+          "href": "courses/b8-the-enabler-bench.html"
+        }
+      ]
+    }
+  ]
+};
+</script>
+<script src="assets/mindmap.js?v=1"></script>
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

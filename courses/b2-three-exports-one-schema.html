@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 2 of 8. Split 110,197 real Olist order lines into three marketplace-style exports, conform them back to one schema with a platform column, build the shop and SKU mapping tables an enabler owns, and compute GMV with and without shipping.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Three marketplace exports, one schema - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 2 of 8. Three dialects, one conformed schema, two owned mapping tables, and one GMV that is R$ 15.42M or R$ 13.22M depending on a single word.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b2-three-exports-one-schema.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Three marketplace exports, one schema - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 2 of 8. Split, conform, map, and count GMV two ways on 110,197 real lines.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 2 · Three marketplace exports, one schema - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 2 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 2 of 8</div>
+    <h1>Three marketplace exports, <span class="accent">one schema</span></h1>
+    <p class="sub">Every marketplace hands a seller the same order in its own dialect: its own column names, its own id formats, its own idea of how much of the buyer you are allowed to see. An enabler running stores on three of them cannot compare anything until those three dialects become one language. Tonight you split 96,478 real delivered Olist orders into three marketplace-style exports, conform them back into one schema with a platform column, build the two mapping tables Serai owns, and discover that GMV is R$ 15.42M or R$ 13.22M depending on one word nobody wrote down.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Analysts and analytics engineers</span>
+      <span class="chip audience">Python, pandas</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-19 · Dialects, mapping tables, GMV</span>
+      <span class="a3" style="flex:5">19-41 · Build-along: split, then conform</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits on the track</h2>
+    </div>
+    <p class="lede">Session 1 drew the estate map and wrote the registry. Tonight is the spine of domain 4, orders, fees and settlement, and the middle link of the first chain: the mapping from each platform's ids to Serai's own. The stand-in is the public <strong>Olist</strong> dataset, real Brazilian marketplace orders, anonymised. The three-way split and the export column names are <strong>constructed</strong> for teaching; the orders, the prices, the shipping fees and the sellers are real. Session 3 then asks which of these columns can still join a buyer across platforms, and the answer depends on everything you build tonight.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A per-platform column map that turns any of three exports into one conformed schema, a shop mapping table and a SKU mapping table with a weekly unmapped-rows check, and two GMV numbers from the same 110,197 lines, each with a name that says exactly what it counts.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers three exports and why you conform them</span>
+      <h2>Three exports, three dialects</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Put one order line from each marketplace side by side and it is the same fact three times: an order, a listing, a shop, a price, a shipping fee. Nothing lines up. The order id is called three different things, the price column means a slightly different thing each time, and one export has no address at all. The job is not to stack the three files. It is to translate each one into a language Serai owns.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 364" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three hand-drawn export sheets at the top. Platform A calls its columns ordersn, item_id, shop_id, item_price, shipping_fee, buyer_zip and buyer_city, and keeps the zip and city. Platform B calls them order_number, sku_id, seller_code, paid_price and shipping_amount, and has no address. Platform C calls them order_no, listing_id, shop_code, sale_price and shipping_fee, and has no address in this export. Arrows from all three run through a funnel labelled per-platform column map into one teal conformed schema: platform, platform_order_id, platform_listing_id, platform_shop_id, item_price, shipping, buyer_zip, buyer_city.">
+        <defs>
+          <filter id="b2aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b2aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b2aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b2aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b2aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b2aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b2aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b2aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b2aW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b2aA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b2aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b2aH" x="30" y="26">THE SAME ORDER LINE, THREE DIALECTS</text>
+        <text class="b2aS" x="310" y="26">column names constructed; the rows under them are real Olist lines</text>
+
+        <g filter="url(#b2aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="44" width="240" height="140" rx="8" transform="rotate(-1.2 150 114)" fill="#FFFFFF"/>
+          <rect x="320" y="44" width="240" height="140" rx="8" transform="rotate(0.9 440 114)" fill="#FFFFFF"/>
+          <rect x="610" y="44" width="240" height="140" rx="8" transform="rotate(-0.8 730 114)" fill="#FFFFFF"/>
+          <!-- header rules on each sheet -->
+          <path d="M42 78 L258 76"/>
+          <path d="M332 76 L548 79"/>
+          <path d="M622 78 L838 76"/>
+          <!-- arrows into the funnel -->
+          <path d="M150 190 L400 204" marker-end="url(#b2aAr)"/>
+          <path d="M440 192 L440 202" marker-end="url(#b2aAr)"/>
+          <path d="M730 190 L480 204" marker-end="url(#b2aAr)"/>
+          <!-- funnel doodle -->
+          <path d="M395 208 L485 208 L452 240 L428 240 Z" fill="url(#b2aHc)"/>
+          <path d="M440 242 L440 258" marker-end="url(#b2aAr)"/>
+          <!-- the conformed schema -->
+          <rect x="90" y="262" width="700" height="64" rx="10" transform="rotate(-0.4 440 294)" fill="#0E6F68" stroke="#0E6F68"/>
+        </g>
+
+        <text class="b2aH" x="46" y="68">Platform A export</text>
+        <text class="b2aS" x="46" y="100">ordersn · item_id · shop_id</text>
+        <text class="b2aS" x="46" y="118">item_price · shipping_fee</text>
+        <text class="b2aS" x="46" y="136">buyer_zip · buyer_city</text>
+        <text class="b2aB" x="46" y="164">keeps zip and city</text>
+
+        <text class="b2aH" x="336" y="68">Platform B export</text>
+        <text class="b2aS" x="336" y="100">order_number · sku_id</text>
+        <text class="b2aS" x="336" y="118">seller_code · paid_price</text>
+        <text class="b2aS" x="336" y="136">shipping_amount</text>
+        <text class="b2aR" x="336" y="164">no address at all</text>
+
+        <text class="b2aH" x="626" y="68">Platform C export</text>
+        <text class="b2aS" x="626" y="100">order_no · listing_id</text>
+        <text class="b2aS" x="626" y="118">shop_code · sale_price</text>
+        <text class="b2aS" x="626" y="136">shipping_fee</text>
+        <text class="b2aR" x="626" y="164">no address in this export</text>
+
+        <text class="b2aA" x="500" y="228">per-platform column map</text>
+
+        <text class="b2aW" x="110" y="288">platform · platform_order_id · platform_listing_id · platform_shop_id</text>
+        <text class="b2aW" x="110" y="310">item_price · shipping · buyer_zip · buyer_city</text>
+
+        <text class="b2aN" x="30" y="350">Same meaning, different names: shipping_fee on A and C, shipping_amount on B. A union would keep all three.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the teal box is the only thing downstream code is allowed to read</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Same order, three column names, three masking levels<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>What it is</th><th>Platform A</th><th>Platform B</th><th>Platform C</th><th>Conformed</th></tr></thead>
+          <tbody>
+            <tr><td>The order</td><td><code>ordersn</code></td><td><code>order_number</code></td><td><code>order_no</code></td><td><code>platform_order_id</code></td></tr>
+            <tr><td>The listing</td><td><code>item_id</code></td><td><code>sku_id</code></td><td><code>listing_id</code></td><td><code>platform_listing_id</code></td></tr>
+            <tr><td>The shop</td><td><code>shop_id</code></td><td><code>seller_code</code></td><td><code>shop_code</code></td><td><code>platform_shop_id</code></td></tr>
+            <tr><td>Item price</td><td><code>item_price</code></td><td><code>paid_price</code></td><td><code>sale_price</code></td><td><code>item_price</code></td></tr>
+            <tr><td>Shipping</td><td><code>shipping_fee</code></td><td><code>shipping_amount</code></td><td><code>shipping_fee</code></td><td><code>shipping</code></td></tr>
+            <tr><td>Buyer address</td><td>zip and city</td><td>none</td><td>none in this export</td><td><code>buyer_zip</code>, <code>buyer_city</code></td></tr>
+          </tbody>
+        </table>
+        <p>The names are constructed, chosen to look the way marketplace exports tend to look, and the masking follows the reported pattern from session 1: every marketplace hides the buyer's name and phone on orders it fulfils, and each keeps a different amount of the address. On the session 8 bench, Platform C keeps phone and address only on seller-shipped orders; tonight's export leaves those out, so only A carries an address.</p>
+        <p>In a real estate the ids differ in format as well as name: each platform issues its own order numbers, its own listing ids and its own shop ids, and none of them means anything on the other two. In the Olist file every id is the same 32-character hex string whichever platform it lands on, which is exactly why you have to imagine the difference, and why Serai owns a mapping table instead of trusting the ids to agree.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why conform, instead of stacking the three files<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A plain union of three exports gives you a frame with every column from every file: <code>ordersn</code>, <code>order_number</code> and <code>order_no</code> side by side, each two-thirds empty. Every query then has to know which column to read for which platform, and every analyst re-learns the dialects on their own. The dialect knowledge leaks into a hundred notebooks and drifts in each one.</p>
+        <p>Conforming puts that knowledge in exactly one place: a column map per platform, read by one function. Downstream code reads eight columns and never learns that Platform B calls the price <code>paid_price</code>. When a marketplace renames a field next quarter, one line changes and nothing else notices.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The silent drifts: type, currency, timezone<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Renaming is the loud part and the easy part. Three drifts do the real damage because nothing errors:</p>
+        <ul>
+          <li><strong>Type.</strong> When the conform step fills <code>buyer_zip</code> with empty values for B and C, pandas turns the whole column into <code>float64</code>. The build-along prints it. A zip prefix is a label, not a number; as a float it loses its leading zeros and joins to nothing. Cast it to a string with the zero padding back, on purpose, in the conform step.</li>
+          <li><strong>Currency.</strong> Olist is all Brazilian reais, so the build-along never meets this. Serai (constructed) runs stores in four markets, so its conformed schema needs a <code>currency</code> column next to every amount, and any cross-market total needs a reporting currency and a dated rate. Adding two currencies without one is the most common wrong number in a regional deck.</li>
+          <li><strong>Timezone.</strong> Olist's timestamps carry no zone. Marketplace exports are often in the market's local time, and four markets can mean more than one offset. Conform to UTC and keep the local time as a second column; session 4 makes one clock a hard rule for the live channel.</li>
+        </ul>
+        <p>Write each of these into the column map as a rule, not a comment. A comment is a hope.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Olist is itself an enabler.</strong> Olist describes its business as connecting small businesses across Brazil to marketplace channels "with a single contract". Its public file has one seller id per seller and no marketplace column at all: Olist issues the ids, so its own estate arrives already conformed. An enabler that sits on top of three marketplaces it does not run gets no such gift. The id comes from the platform, and the conforming is Serai's job. Source: Olist, "Brazilian E-Commerce Public Dataset by Olist", Kaggle, CC BY-NC-SA 4.0.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the platform column and the two mapping tables</span>
+      <h2>The platform column and the two mapping tables</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Once the rows speak one language, two small things make them comparable. A <code>platform</code> column says where each row came from. Two mapping tables say which of Serai's stores and which of Serai's SKUs each platform id belongs to. Neither is interesting on its own, and together they are what turns three piles of orders into one store view and one SKU view.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Top half: three platform shop ids, A shop_id, B seller_code and C shop_code, each point into rows of the shop mapping table, which is owned by store ops. The three rows fan into one teal master store id, ST001cca7a, a real Olist seller that sells on all three platforms in the split. Bottom half: two bars measured on the full file. Shop mapping: 6,911 rows become 2,970 stores, of which 1,665 sell on all three platforms, 611 on two and 694 on one. SKU mapping: 47,148 rows become 32,216 SKUs, of which 4,176 are on all three, 6,580 on two and 21,460 on one.">
+        <defs>
+          <filter id="b2bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b2bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b2bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b2bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b2bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b2bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b2bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b2bW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b2bA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b2bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b2bH" x="30" y="26">PLATFORM IDS, THROUGH A TABLE SERAI OWNS, TO ONE MASTER ID</text>
+
+        <g filter="url(#b2bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- platform id cards -->
+          <rect x="30" y="56" width="190" height="36" rx="6" transform="rotate(-1.5 125 74)" fill="#FFFFFF"/>
+          <rect x="30" y="106" width="190" height="36" rx="6" transform="rotate(1.2 125 124)" fill="#FFFFFF"/>
+          <rect x="30" y="156" width="190" height="36" rx="6" transform="rotate(-0.9 125 174)" fill="#FFFFFF"/>
+          <path d="M224 74 L296 110" marker-end="url(#b2bAr)"/>
+          <path d="M224 124 L296 136" marker-end="url(#b2bAr)"/>
+          <path d="M224 174 L296 162" marker-end="url(#b2bAr)"/>
+          <!-- the mapping table -->
+          <rect x="300" y="44" width="290" height="160" rx="8" transform="rotate(0.4 445 124)" fill="#FDF1EF"/>
+          <path d="M312 96 L578 96"/>
+          <!-- the fan into one master id -->
+          <path d="M594 110 L674 124" marker-end="url(#b2bAr)"/>
+          <path d="M594 136 L674 130" marker-end="url(#b2bAr)"/>
+          <path d="M594 162 L674 136" marker-end="url(#b2bAr)"/>
+          <rect x="680" y="96" width="170" height="64" rx="10" transform="rotate(-1 765 128)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- two measured bars -->
+          <rect x="200" y="250" width="314" height="32" rx="3" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="514" y="250" width="115" height="32" rx="3" fill="#F5C6C0"/>
+          <rect x="629" y="250" width="131" height="32" rx="3" fill="#FFFFFF"/>
+          <rect x="200" y="298" width="73" height="32" rx="3" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="273" y="298" width="114" height="32" rx="3" fill="#F5C6C0"/>
+          <rect x="387" y="298" width="373" height="32" rx="3" fill="#FFFFFF"/>
+        </g>
+
+        <text class="b2bL" x="44" y="79">A · shop_id</text>
+        <text class="b2bL" x="44" y="129">B · seller_code</text>
+        <text class="b2bL" x="44" y="179">C · shop_code</text>
+
+        <text class="b2bH" x="316" y="66">shop mapping</text>
+        <text class="b2bS" x="316" y="84">owner: store ops · checked weekly</text>
+        <text class="b2bL" x="316" y="116">A · 001cca7ae9ae... · ST001cca7a</text>
+        <text class="b2bL" x="316" y="142">B · 001cca7ae9ae... · ST001cca7a</text>
+        <text class="b2bL" x="316" y="168">C · 001cca7ae9ae... · ST001cca7a</text>
+        <text class="b2bS" x="316" y="192">identical only because Olist issued it</text>
+
+        <text class="b2bW" x="696" y="124">store_id</text>
+        <text class="b2bW" x="696" y="144">ST001cca7a</text>
+        <text class="b2bA" x="680" y="182">one store, three platform ids</text>
+
+        <text class="b2bH" x="30" y="238">THE TWO TABLES ON THE FULL FILE</text>
+        <text class="b2bS" x="420" y="238">bar segments to scale · teal = on all three platforms</text>
+
+        <text class="b2bL" x="30" y="264">shops · 6,911 rows</text>
+        <text class="b2bS" x="30" y="280">2,970 stores</text>
+        <text class="b2bW" x="212" y="271">1,665 on all three</text>
+        <text class="b2bL" x="524" y="271">611 on two</text>
+        <text class="b2bL" x="640" y="271">694 on one</text>
+
+        <text class="b2bL" x="30" y="312">SKUs · 47,148 rows</text>
+        <text class="b2bS" x="30" y="328">32,216 SKUs</text>
+        <text class="b2bW" x="208" y="319">4,176</text>
+        <text class="b2bL" x="283" y="319">6,580 on two</text>
+        <text class="b2bL" x="398" y="319">21,460 on one</text>
+
+        <text class="b2bN" x="30" y="354">More than half the stores can be read side by side on all three platforms. Only 13 percent of SKUs can.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the fan is the whole point: three rows in a table, one row in every report</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Platform is a column, not a folder<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The first draft of every multi-marketplace warehouse has three folders, <code>platform_a/</code>, <code>platform_b/</code>, <code>platform_c/</code>, with a copy of every table in each. Every comparison is then a three-way join, every new metric is written three times, and the three copies drift within a month.</p>
+        <p>Make <code>platform</code> the first column of the conformed schema instead. A comparison becomes a <code>groupby("platform")</code>. A new marketplace becomes a new value and a new entry in the column map, not a new folder of tables. Session 1 put the platform in a column on the estate map; tonight it becomes a column in the data.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Two mapping tables, owned, with an owner<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A mapping table has one row per platform id and one column that says which Serai id it belongs to. It is Serai's own asset, obtainability word <strong>owned</strong>, and it is the only reason a cross-platform view exists at all.</p>
+        <table class="clean">
+          <thead><tr><th>Table</th><th>Key</th><th>Maps to</th><th>Owner</th><th>On the full Olist file</th></tr></thead>
+          <tbody>
+            <tr><td>Shop mapping</td><td><code>platform</code> + <code>platform_shop_id</code></td><td><code>store_id</code></td><td>Store ops</td><td>6,911 rows to 2,970 stores: 1,665 on all three platforms, 611 on two, 694 on one</td></tr>
+            <tr><td>SKU mapping</td><td><code>platform</code> + <code>platform_listing_id</code></td><td><code>sku</code></td><td>Catalogue</td><td>47,148 rows to 32,216 SKUs: 4,176 on all three, 6,580 on two, 21,460 on one</td></tr>
+          </tbody>
+        </table>
+        <p>The 1,665 is the number to say out loud. Those are the stores whose three platforms can be read on one screen, which is the first thing a brand asks an enabler for. The master ids in the build-along are "ST" and "SK" plus the first eight characters of the Olist id: a readable convention for teaching. In a real estate the master id is issued by the catalogue tool and never derived from a platform's id, because the platform can re-issue its id and yours must not move.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The weekly unmapped-rows check<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A mapping table decays the moment a brand launches a new listing on one platform and nobody adds the row. The line still arrives, joins to nothing, and falls out of the SKU view without an error. The fix is a scheduled check with a named owner: left-join every conformed line to both tables, count the lines with no master id, and send the count, by platform and by brand, to the owner every week.</p>
+        <p>On the full Olist file the count is zero for both tables, because the build-along builds the maps from the same lines it checks. That zero is the check working, not the check being unnecessary. The session 8 bench plants 219 lines on listings missing from Serai's SKU table (constructed), and they are the whole gap between a SKU match rate of 1.0 and 0.9748. Owning the key means maintaining it. When there is no key to own at all, as with buyers, the matching methods live in <a href="https://phoebefu6.github.io/learn-entity-resolution-with-phoebe/courses/01-no-shared-key.html">learn-entity-resolution</a>, and session 3 asks whether you can use them.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Constructed: the Monday a brand's best seller vanished.</strong> In this constructed Serai story, a skincare brand re-lists its best seller on Platform B to fix a photo, and the marketplace issues a new listing id. Orders keep flowing. The SKU view shows the product's Platform B sales falling to zero, and the brand's account lead spends a morning drafting an explanation for a collapse that never happened. The weekly unmapped-rows check would have flagged one new listing id with rising lines and no SKU against it, and store ops would have added one row. Every detail of this story is constructed; the mechanism is the one every mapping table has.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers one GMV from one schema, and its definition</span>
+      <h2>One schema, one GMV</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">With one schema you can finally add up the money. And the first sum raises the first definition question: does GMV include what the buyer paid for shipping? On the 110,197 delivered Olist lines the two answers are R$ 15,419,773.75 and R$ 13,221,498.11. Both are correct. Only one of them can be the number in the board pack.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three hand-drawn stacked horizontal bars drawn to scale. Platform A: items R$ 6,050,000.43 plus a teal shipping segment. Platform B: items R$ 4,528,552.65 plus shipping. Platform C: items R$ 2,642,945.03 plus shipping. Shipping is a similar slice on every platform. Totals: R$ 13.22 million items only, R$ 15.42 million with shipping, shipping 14.26 percent of the larger number.">
+        <defs>
+          <filter id="b2cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="47" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b2cHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b2cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b2cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b2cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b2cB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b2cV { font: 800 18px Inter, sans-serif; fill: #8A2330; }
+          .b2cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b2cH" x="30" y="26">DELIVERED GMV BY PLATFORM, ITEMS AND SHIPPING</text>
+        <text class="b2cS" x="30" y="44">bar lengths to scale from the build-along's output · hachure = items · teal = shipping</text>
+
+        <g filter="url(#b2cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="120" y="66" width="477" height="26" rx="3" transform="rotate(-0.3 358 79)" fill="url(#b2cHc)"/>
+          <rect x="597" y="66" width="79" height="26" rx="3" transform="rotate(-0.3 636 79)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="120" y="130" width="357" height="26" rx="3" transform="rotate(0.3 298 143)" fill="url(#b2cHc)"/>
+          <rect x="477" y="130" width="60" height="26" rx="3" transform="rotate(0.3 507 143)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="120" y="194" width="208" height="26" rx="3" transform="rotate(-0.2 224 207)" fill="url(#b2cHc)"/>
+          <rect x="328" y="194" width="35" height="26" rx="3" transform="rotate(-0.2 345 207)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- parcel doodle -->
+          <rect x="790" y="62" width="40" height="30" rx="2" transform="rotate(-4 810 77)"/>
+          <path d="M790 72 L830 70"/>
+          <path d="M810 62 L810 92"/>
+        </g>
+
+        <text class="b2cH" x="30" y="84">Platform A</text>
+        <text class="b2cH" x="30" y="148">Platform B</text>
+        <text class="b2cH" x="30" y="212">Platform C</text>
+
+        <text class="b2cB" x="690" y="84">+ shipping</text>
+        <text class="b2cB" x="551" y="148">+ shipping</text>
+        <text class="b2cB" x="377" y="212">+ shipping</text>
+
+        <text class="b2cS" x="120" y="110">items R$ 6,050,000.43</text>
+        <text class="b2cS" x="120" y="174">items R$ 4,528,552.65</text>
+        <text class="b2cS" x="120" y="238">items R$ 2,642,945.03</text>
+
+        <text class="b2cV" x="30" y="274">R$ 13.22M</text>
+        <text class="b2cS" x="30" y="292">items only, all three</text>
+        <text class="b2cV" x="250" y="274">R$ 15.42M</text>
+        <text class="b2cS" x="250" y="292">with shipping, all three</text>
+        <text class="b2cV" x="490" y="274">14.26%</text>
+        <text class="b2cS" x="490" y="292">of GMV-with-shipping is shipping</text>
+
+        <text class="b2cN" x="30" y="316">Same lines, same schema. The gap is one word in the definition, and it is not small.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the teal slice is the part of GMV a definition either keeps or drops</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Two GMVs from one table<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Measure, delivered lines</th><th>Value</th><th>What it counts</th></tr></thead>
+          <tbody>
+            <tr><td>GMV with shipping</td><td>R$ 15,419,773.75</td><td><code>item_price + shipping</code>, every delivered line</td></tr>
+            <tr><td>GMV without shipping</td><td>R$ 13,221,498.11</td><td><code>item_price</code> only</td></tr>
+            <tr><td>Shipping share</td><td>14.26 percent</td><td>shipping / GMV with shipping</td></tr>
+            <tr><td>Platform A, items only</td><td>R$ 6,050,000.43</td><td>43,750 orders in the constructed split</td></tr>
+            <tr><td>Platform B, items only</td><td>R$ 4,528,552.65</td><td>33,360 orders</td></tr>
+            <tr><td>Platform C, items only</td><td>R$ 2,642,945.03</td><td>19,368 orders</td></tr>
+          </tbody>
+        </table>
+        <p>The per-platform numbers are an artefact of the seeded split, so they tell you nothing about any real marketplace; what they show is that one conformed schema answers the per-platform question with one line of code. The 14.26 percent is real Olist behaviour: on these orders, one real in every seven the buyer paid went to shipping.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where the definition lives, and the enabler twist<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Tonight is about building the schema that makes the definition computable. The definition itself belongs in one place, the metric registry that session 7 writes as code, with its name, its formula, its owner and a test that fails if the number drifts. The general GMV equation and its variants are taught in <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a1-the-gmv-equation.html">learn-ecommerce-metrics, session a1</a>; link to it rather than re-deriving it.</p>
+        <p>The enabler twist is that "GMV" has an owner question on top of the formula question. Whose GMV is it: the brand's, run through Serai's stores? Placed or settled? With shipping or without? Serai's GMV-linked share (constructed, 2 percent) is paid on one of these, and a contract that says "GMV" without saying which is a dispute waiting for its quarter. Tonight's filter to delivered orders is already one choice; session 7 lines up the others.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>A listed marketplace writes its GMV definition down.</strong> Sea Limited's annual report for fiscal 2019 defines Shopee's GMV as the value of orders on the marketplace and says its calculation "includes shipping and other charges". It also counts each confirmed order regardless of whether the transaction settles or the item is returned. So the headline GMV of a listed marketplace is the larger of tonight's two numbers, and it counts orders tonight's delivered filter would drop. Neither choice is wrong; the lesson is that Sea wrote its choice down. Source: Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Split, then conform, 110,197 real lines</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">You will make the mess before you clean it: split the real delivered orders into three constructed exports, then conform them back and prove nothing was lost. Every number below is what the code prints on the public dataset, run on pandas 2.1 and numpy 1.26. The seed fixes the split, so your counts should match to the row; if they do not, check the file version first.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline of eight steps in two rows. Top row, left to right: load orders, customers and items; filter to 96,478 delivered orders; seeded split into A 43,750, B 33,360 and C 19,368 orders; rename into three dialects, B and C without an address. Bottom row, right to left: conform with a column map per platform, 110,197 lines with buyer_zip on 45.35 percent, shown in teal; build the two mapping tables, shops 6,911 rows to 2,970 and SKUs 47,148 to 32,216; unmapped check, 0 stores and 0 SKUs; GMV two ways, R$ 15,419,773.75 with shipping and R$ 13,221,498.11 without.">
+        <defs>
+          <filter id="b2dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="59" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b2dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b2dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b2dH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b2dL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b2dS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b2dB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b2dR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b2dW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b2dN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b2dH" x="30" y="26">MAKE THE MESS, THEN CLEAN IT</text>
+        <text class="b2dS" x="260" y="26">top row builds the three exports; bottom row conforms them back and counts</text>
+
+        <g filter="url(#b2dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="46" width="185" height="72" rx="8" transform="rotate(-0.8 122 82)" fill="#FFFFFF"/>
+          <rect x="245" y="46" width="185" height="72" rx="8" transform="rotate(0.6 337 82)" fill="#FFFFFF"/>
+          <rect x="460" y="46" width="185" height="72" rx="8" transform="rotate(-0.5 552 82)" fill="url(#b2dHc)"/>
+          <rect x="675" y="46" width="185" height="72" rx="8" transform="rotate(0.7 767 82)" fill="#FDF1EF"/>
+          <path d="M217 82 L241 82" marker-end="url(#b2dAr)"/>
+          <path d="M432 82 L456 82" marker-end="url(#b2dAr)"/>
+          <path d="M647 82 L671 82" marker-end="url(#b2dAr)"/>
+          <path d="M767 122 L767 152" marker-end="url(#b2dAr)"/>
+          <rect x="675" y="158" width="185" height="72" rx="8" transform="rotate(-0.6 767 194)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="460" y="158" width="185" height="72" rx="8" transform="rotate(0.5 552 194)" fill="#FDF1EF"/>
+          <rect x="245" y="158" width="185" height="72" rx="8" transform="rotate(-0.7 337 194)" fill="#FFFFFF"/>
+          <rect x="30" y="158" width="185" height="72" rx="8" transform="rotate(0.6 122 194)" fill="#FFFFFF"/>
+          <path d="M673 194 L649 194" marker-end="url(#b2dAr)"/>
+          <path d="M458 194 L434 194" marker-end="url(#b2dAr)"/>
+          <path d="M243 194 L219 194" marker-end="url(#b2dAr)"/>
+          <!-- seed doodle on the split box -->
+          <path d="M622 104 C616 96 616 90 622 84 C628 90 628 96 622 104 Z"/>
+        </g>
+
+        <text class="b2dL" x="44" y="70">1 · load three CSVs</text>
+        <text class="b2dS" x="44" y="90">orders, customers, items</text>
+        <text class="b2dS" x="44" y="106">real Olist, via kagglehub</text>
+
+        <text class="b2dL" x="259" y="70">2 · filter delivered</text>
+        <text class="b2dS" x="259" y="90">96,478 orders</text>
+        <text class="b2dS" x="259" y="106">110,197 lines</text>
+
+        <text class="b2dL" x="474" y="70">3 · seeded split</text>
+        <text class="b2dS" x="474" y="90">A 43,750 · B 33,360</text>
+        <text class="b2dS" x="474" y="106">C 19,368 (constructed)</text>
+
+        <text class="b2dL" x="689" y="70">4 · rename</text>
+        <text class="b2dS" x="689" y="90">three dialects</text>
+        <text class="b2dR" x="689" y="106">B and C: no address</text>
+
+        <text class="b2dW" x="689" y="182">5 · conform</text>
+        <text class="b2dW" x="689" y="202">110,197 lines</text>
+        <text class="b2dW" x="689" y="220">buyer_zip on 45.35%</text>
+
+        <text class="b2dL" x="474" y="182">6 · two mapping tables</text>
+        <text class="b2dS" x="474" y="202">shops 6,911 to 2,970</text>
+        <text class="b2dS" x="474" y="218">SKUs 47,148 to 32,216</text>
+
+        <text class="b2dL" x="259" y="182">7 · unmapped check</text>
+        <text class="b2dB" x="259" y="202">0 stores · 0 SKUs</text>
+        <text class="b2dS" x="259" y="218">run it weekly</text>
+
+        <text class="b2dL" x="44" y="182">8 · GMV, two ways</text>
+        <text class="b2dS" x="44" y="202">R$ 15,419,773.75 with</text>
+        <text class="b2dS" x="44" y="218">R$ 13,221,498.11 without</text>
+
+        <text class="b2dN" x="30" y="256">Line count in equals line count out at every step. That equality is the test that the conform lost nothing.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - step 5 is the one downstream code depends on; the other seven exist to prove it right</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Load the three tables and keep delivered orders.</strong> The no-login route is kagglehub; run it from a scratch folder, not inside a repo. The customer table rides along because it holds the address columns that Platform A will keep and B will lose.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · load and filter</span>import kagglehub, numpy as np, pandas as pd
+path = kagglehub.dataset_download("olistbr/brazilian-ecommerce")
+
+orders    = pd.read_csv(f"{path}/olist_orders_dataset.csv")
+customers = pd.read_csv(f"{path}/olist_customers_dataset.csv")
+items     = pd.read_csv(f"{path}/olist_order_items_dataset.csv")
+
+orders = orders[orders.order_status == "delivered"].merge(customers, on="customer_id")
+print(len(orders), "delivered orders")
+# 96478 delivered orders</div>
+      </div>
+      <div class="step">
+        <p><strong>Split the orders across three constructed platforms, with a seed.</strong> The split is at order grain, so every line of an order lands on the same platform, as it would in life. The 45 / 35 / 20 weights are constructed; the seed makes your split identical to this one.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · the seeded split</span>rng = np.random.default_rng(20260929)
+orders["platform"] = rng.choice(["A", "B", "C"], len(orders), p=[.45, .35, .20])
+print(orders.platform.value_counts().sort_index().to_dict())
+
+lines = items.merge(orders[["order_id", "platform", "customer_zip_code_prefix", "customer_city"]],
+                    on="order_id")
+print(len(lines), "delivered lines", lines.platform.value_counts().sort_index().to_dict())
+# {'A': 43750, 'B': 33360, 'C': 19368}
+# 110197 delivered lines {'A': 49977, 'B': 38204, 'C': 22016}</div>
+      </div>
+      <div class="step">
+        <p><strong>Rename each platform's rows into its own dialect.</strong> This is the mess the marketplaces hand you. B and C drop the address columns, which is the masking level of tonight's export.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · three exports</span>A = lines[lines.platform == "A"].rename(columns={
+    "order_id": "ordersn", "product_id": "item_id", "seller_id": "shop_id",
+    "price": "item_price", "freight_value": "shipping_fee",
+    "customer_zip_code_prefix": "buyer_zip", "customer_city": "buyer_city"})
+B = lines[lines.platform == "B"].rename(columns={
+    "order_id": "order_number", "product_id": "sku_id", "seller_id": "seller_code",
+    "price": "paid_price", "freight_value": "shipping_amount"}
+    ).drop(columns=["customer_zip_code_prefix", "customer_city"])   # B ships no address
+C = lines[lines.platform == "C"].rename(columns={
+    "order_id": "order_no", "product_id": "listing_id", "seller_id": "shop_code",
+    "price": "sale_price", "freight_value": "shipping_fee"}
+    ).drop(columns=["customer_zip_code_prefix", "customer_city"])
+exports = {"A": A, "B": B, "C": C}
+for p, d in exports.items():
+    print(p, len(d), [c for c in d.columns if c not in ("order_item_id", "shipping_limit_date", "platform")])
+# A 49977 ['ordersn', 'item_id', 'shop_id', 'item_price', 'shipping_fee', 'buyer_zip', 'buyer_city']
+# B 38204 ['order_number', 'sku_id', 'seller_code', 'paid_price', 'shipping_amount']
+# C 22016 ['order_no', 'listing_id', 'shop_code', 'sale_price', 'shipping_fee']</div>
+      </div>
+      <div class="step">
+        <p><strong>Conform with one column map per platform, and fix the type drift on purpose.</strong> The map is the only place the dialects are written down. <code>reindex</code> adds any schema column a platform does not send as an honest empty value, and that is exactly what turns <code>buyer_zip</code> into a float. Cast it back to a zero-padded string in the same step.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · the conformed schema</span>COLUMN_MAP = {
+    "A": {"ordersn": "platform_order_id", "item_id": "platform_listing_id", "shop_id": "platform_shop_id",
+          "item_price": "item_price", "shipping_fee": "shipping", "buyer_zip": "buyer_zip", "buyer_city": "buyer_city"},
+    "B": {"order_number": "platform_order_id", "sku_id": "platform_listing_id", "seller_code": "platform_shop_id",
+          "paid_price": "item_price", "shipping_amount": "shipping"},
+    "C": {"order_no": "platform_order_id", "listing_id": "platform_listing_id", "shop_code": "platform_shop_id",
+          "sale_price": "item_price", "shipping_fee": "shipping"},
+}
+SCHEMA = ["platform", "platform_order_id", "platform_listing_id", "platform_shop_id",
+          "item_price", "shipping", "buyer_zip", "buyer_city"]
+
+def conform(p, d):
+    x = d[list(COLUMN_MAP[p])].rename(columns=COLUMN_MAP[p])
+    x["platform"] = p
+    return x.reindex(columns=SCHEMA)          # a missing column becomes an honest NaN
+
+conformed = pd.concat([conform(p, d) for p, d in exports.items()], ignore_index=True)
+print(len(conformed), "conformed lines")
+print("buyer_zip dtype after conform:", conformed.buyer_zip.dtype)
+conformed["buyer_zip"] = conformed.buyer_zip.astype("Int64").astype("string").str.zfill(5)
+print("buyer_zip dtype after fix:    ", conformed.buyer_zip.dtype)
+print("buyer_zip present:", round(conformed.buyer_zip.notna().mean() * 100, 2), "percent")
+# 110197 conformed lines
+# buyer_zip dtype after conform: float64
+# buyer_zip dtype after fix:     string
+# buyer_zip present: 45.35 percent</div>
+      </div>
+      <div class="step">
+        <p><strong>Build the two mapping tables.</strong> One row per platform id, one master id per row. The "ST" and "SK" prefixes plus the first eight characters of the Olist id are a teaching convention; in a real estate the catalogue tool issues the master id. Olist uses one seller id across platforms, so here the fan is by construction; in a real estate each platform's id would differ and a person would have mapped it.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · shop and SKU mapping</span>shop_map = conformed[["platform", "platform_shop_id"]].drop_duplicates()
+shop_map["store_id"] = "ST" + shop_map.platform_shop_id.str[:8]
+sku_map = conformed[["platform", "platform_listing_id"]].drop_duplicates()
+sku_map["sku"] = "SK" + sku_map.platform_listing_id.str[:8]
+
+print("shop mapping", len(shop_map), "rows -&gt;", shop_map.store_id.nunique(), "stores")
+print("sku mapping ", len(sku_map), "rows -&gt;", sku_map.sku.nunique(), "SKUs")
+print("stores by platforms:", shop_map.groupby("store_id").platform.nunique().value_counts().sort_index().to_dict())
+print("SKUs by platforms:  ", sku_map.groupby("sku").platform.nunique().value_counts().sort_index().to_dict())
+# shop mapping 6911 rows -&gt; 2970 stores
+# sku mapping  47148 rows -&gt; 32216 SKUs
+# stores by platforms: {1: 694, 2: 611, 3: 1665}
+# SKUs by platforms:   {1: 21460, 2: 6580, 3: 4176}</div>
+      </div>
+      <div class="step">
+        <p><strong>Join, and count what did not map.</strong> Use a left join so an unmapped line stays in the frame with an empty master id instead of silently disappearing. This is the check store ops and catalogue run every week.</p>
+        <div class="prompt-box good"><span class="label">★ Step 6 · the unmapped-rows check</span>m = (conformed
+     .merge(shop_map, on=["platform", "platform_shop_id"], how="left")
+     .merge(sku_map, on=["platform", "platform_listing_id"], how="left"))
+print(len(m), "lines after mapping")
+print("unmapped store:", m.store_id.isna().sum(), " unmapped SKU:", m.sku.isna().sum())
+# 110197 lines after mapping
+# unmapped store: 0  unmapped SKU: 0</div>
+      </div>
+      <div class="step">
+        <p><strong>Compute GMV both ways, and by platform.</strong> Print both, with names that say what they count. The per-platform split reflects the constructed weights, not any real marketplace.</p>
+        <div class="prompt-box good"><span class="label">★ Step 7 · one schema, two GMVs</span>with_ship  = (m.item_price + m.shipping).sum()
+items_only = m.item_price.sum()
+print(f"GMV with shipping    R$ {with_ship:,.2f}")
+print(f"GMV without shipping R$ {items_only:,.2f}")
+print(f"shipping share       {m.shipping.sum() / with_ship * 100:.2f} percent")
+print(m.groupby("platform").item_price.sum().round(2).to_dict())
+# GMV with shipping    R$ 15,419,773.75
+# GMV without shipping R$ 13,221,498.11
+# shipping share       14.26 percent
+# {'A': 6050000.43, 'B': 4528552.65, 'C': 2642945.03}</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Keep COLUMN_MAP next to the session 1 registry, in the same file.</strong> The registry says what each table is; the column map says how each platform spells it. Session 3 reads the conformed frame to test join keys, and session 7 reads it to compute the registered GMV. One file, imported everywhere, or the dialects start leaking back into notebooks.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 3</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Add a fourth constructed platform, D, with its own column names and a <code>currency</code> column. Extend COLUMN_MAP and SCHEMA so the conform step still prints 110,197 lines when you re-split four ways.</li>
+      <li>Delete 1 percent of the rows from <code>sku_map</code> at random, with a seed, and re-run step 6. Report the unmapped count by platform, and write the one-line message you would send the catalogue owner.</li>
+      <li>Compute GMV a third way: all order statuses rather than delivered only. Write the three definitions as three one-line sentences, each starting with the word it counts.</li>
+      <li>In an estate you work on, find where the mapping from a platform's product id to your own lives. If the answer is a spreadsheet, write down who last edited it and when.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 2 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Three exports call the shipping fee <code>shipping_fee</code>, <code>shipping_amount</code> and <code>shipping_fee</code>. Why conform instead of concatenating the three files as they are?</p>
+      <button class="qopt" type="button">A · Because concatenating is slower in pandas</button>
+      <button class="qopt" type="button">B · Because the marketplaces forbid storing their column names</button>
+      <button class="qopt" type="button">C · Because a union keeps every dialect side by side, so every query has to know each platform's spelling; a column map writes that knowledge down once and downstream code reads one schema</button>
+      <button class="qopt" type="button">D · Because conforming removes the need for a platform column</button>
+      <p class="qwhy">The union is not wrong, it is expensive: the dialects leak into every notebook and drift in each. The column map puts them in one place, and the platform column is what the conformed schema keeps so the three can still be compared.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · On the full file the shop mapping has 6,911 rows and 2,970 stores, 1,665 of them on all three platforms. What makes a cross-platform store view possible?</p>
+      <button class="qopt" type="button">A · The shop mapping table: one row per platform shop id pointing at one Serai store id, owned and checked weekly</button>
+      <button class="qopt" type="button">B · The platform shop ids, which agree across marketplaces</button>
+      <button class="qopt" type="button">C · The buyer's address, which links the stores</button>
+      <button class="qopt" type="button">D · Grouping by <code>platform</code></button>
+      <p class="qwhy">In a real estate each platform issues its own shop id and none agrees with the others. Olist's ids agree only because Olist issued them. The mapping table is the asset that turns three ids into one store, and without its owner and its weekly check it decays.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">3 · The same 110,197 delivered lines give R$ 15,419,773.75 or R$ 13,221,498.11. What is the right move?</p>
+      <button class="qopt" type="button">A · Report the larger number, since Sea's definition includes shipping</button>
+      <button class="qopt" type="button">B · Report the smaller number, since shipping is not merchandise</button>
+      <button class="qopt" type="button">C · Report the average of the two</button>
+      <button class="qopt" type="button">D · Pick one, name it by what it counts, and write it once in the metric registry so every report computes the same thing</button>
+      <p class="qwhy">Both numbers are correct; the 14.26 percent gap is a definition, not an error. Sea's choice shows a listed marketplace writing its definition down, not that one answer is right. The registry in session 7 is where the choice lives.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The conformed schema</span><span class="note">Practice: one column map per platform, one function, a platform column; every count run on the full Olist file in this build</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Shop and SKU mapping tables</span><span class="note">Practice; the 6,911 to 2,970 and 47,148 to 32,216 counts measured on Brazilian E-Commerce Public Dataset by Olist, Kaggle, CC BY-NC-SA 4.0</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">GMV with and without shipping</span><span class="note">Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions, read at source; the two Olist totals measured</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The three-way split and the export column names</span><span class="note">Constructed for teaching; the orders, prices, shipping fees and sellers under them are real</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Conform, do not stack</b><span>One column map per platform, one function; downstream reads one schema.</span></div>
+      <div class="cheat-item"><b>Platform is a column</b><span>Never a folder. A new marketplace is a new value, not a new copy of every table.</span></div>
+      <div class="cheat-item"><b>The silent drifts</b><span>Type, currency, timezone. Nothing errors; write each as a rule in the conform step.</span></div>
+      <div class="cheat-item"><b>Two owned tables</b><span>Shop and SKU mapping. 1,665 of 2,970 stores are on all three platforms.</span></div>
+      <div class="cheat-item"><b>Check unmapped weekly</b><span>Left join, count the empty master ids, send it to a named owner.</span></div>
+      <div class="cheat-item"><b>Name the GMV</b><span>R$ 15.42M with shipping, R$ 13.22M without. Write the choice once, in the registry.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>You have one schema and two mapping tables that make store and SKU views exact. Session 3 turns to the one thing the mapping tables cannot map: the buyer. It tests every join key the three exports leave, from masked names to the zip that only Platform A kept, and measures at which grain each one holds.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 2 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b1-seven-domains.html">← Prev: Seven domains, one enabler estate</a> &nbsp;·&nbsp; <a href="b3-the-identity-gate.html">Next: The identity gate →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

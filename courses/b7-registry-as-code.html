@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 7 of 8. Three defensible GMVs from one real Olist quarter, a YAML registry that gives each one a name, a formula, a grain, an owner and a version, and tests that fail when a definition drifts.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The metric registry as code - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 7 of 8. One real quarter, three GMVs, one YAML registry, one reader, and a golden-number test that catches a silent definition change.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b7-registry-as-code.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The metric registry as code - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 7 of 8. Three GMVs, one registry, tests that fail when a definition drifts.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 7 · The metric registry as code - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 7 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 7 of 8</div>
+    <h1>The metric registry <span class="accent">as code</span></h1>
+    <p class="sub">Take one real quarter of Olist orders and ask for its GMV. You get R$ 2,858,289.74, or R$ 3,332,156.97, or R$ 2,807,156.64, and every one of them is right. The problem is never the arithmetic; it is that a dashboard, a board pack and a brand statement each quietly picked a different one and called it the same word. Tonight you write the registry that stops that: one YAML entry per metric name, one Python reader that everything imports, and three tests that fail the moment somebody changes a definition without saying so.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Analysts and analytics engineers</span>
+      <span class="chip audience">Python, YAML</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-19 · Three GMVs, the entry, the tests</span>
+      <span class="a3" style="flex:5">19-41 · Build-along: the registry on Olist</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where the registry sits on the track</h2>
+    </div>
+    <p class="lede">Session 1 wrote an estate registry: every table, its domain, its grain, its owner. Tonight extends the same idea one layer up, from tables to the numbers people quote. Sessions 2 to 6 built the inputs (conformed orders, the identity gate, the live event spec, stage metrics, creator yield); every one of them ends in a number somebody will put on a slide. The metric registry is where that number gets a single name, a single formula and a history. The data is the real Olist file, Q2 2018; every value printed below is what the code printed on it.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A <code>metrics.yaml</code> with three GMV entries and two active-seller entries, each answering the three questions a serious reader asks of a key metric; a <code>registry.py</code> that is the only thing allowed to read it; and a <code>test_registry.py</code> that passes on the approved definitions and fails, loudly, when one line of SQL changes without a version bump.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers GMV variants on one real quarter</span>
+      <h2>Three GMVs from one real quarter</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Q2 2018 on Olist, April to June, order lines by purchase date: 19,947 orders. Filter the same rows three ways and you get three totals, each with a sound argument behind it. The registry does not choose the "true" one. It gives each one its own name, so that nobody can ever again say "GMV" and mean two of them.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pile of Q2 2018 Olist order lines, 19,947 orders, delivered 19,646, shipped 196, canceled 50, invoiced 41, processing 14, feeding three filters. Any status, item price only, gives R$ 2,858,289.74, named gmv_placed. Any status, item price plus shipping, gives R$ 3,332,156.97, named gmv_placed_with_shipping. Delivered only, item price only, gives R$ 2,807,156.64, named gmv_delivered. The spread between the highest and lowest is R$ 525,000.">
+        <defs>
+          <filter id="b7aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="71" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b7aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b7aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b7aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b7aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b7aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b7aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b7aV { font: 800 18px Inter, sans-serif; fill: #8A2330; }
+          .b7aA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b7aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b7aH" x="30" y="26">ONE QUARTER OF ORDER LINES, FILTERED THREE WAYS</text>
+        <text class="b7aA" x="320" y="44">the filter</text>
+        <text class="b7aA" x="620" y="44">the total, and the name the registry gives it</text>
+
+        <g filter="url(#b7aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- the pile -->
+          <rect x="30" y="50" width="230" height="220" rx="10" transform="rotate(-0.6 145 160)" fill="url(#b7aHc)"/>
+          <!-- funnel doodle -->
+          <path d="M112 62 L178 62 L152 86 L152 100 L138 96 L138 86 Z" fill="#FFFFFF"/>
+          <rect x="44" y="110" width="202" height="148" rx="8" transform="rotate(0.5 145 184)" fill="#FFFFFF"/>
+          <!-- three filters -->
+          <rect x="320" y="50" width="220" height="52" rx="8" transform="rotate(-0.7 430 76)" fill="#FDF1EF"/>
+          <rect x="320" y="134" width="220" height="52" rx="8" transform="rotate(0.6 430 160)" fill="#FDF1EF"/>
+          <rect x="320" y="218" width="220" height="52" rx="8" transform="rotate(-0.5 430 244)" fill="#FDF1EF"/>
+          <!-- three totals -->
+          <rect x="620" y="50" width="230" height="52" rx="8" transform="rotate(0.5 735 76)" fill="#FFFFFF"/>
+          <rect x="620" y="134" width="230" height="52" rx="8" transform="rotate(-0.6 735 160)" fill="#FFFFFF"/>
+          <rect x="620" y="218" width="230" height="52" rx="8" transform="rotate(0.4 735 244)" fill="#FFFFFF"/>
+          <!-- arrows -->
+          <path d="M264 110 L314 78" marker-end="url(#b7aAr)"/>
+          <path d="M264 160 L314 160" marker-end="url(#b7aAr)"/>
+          <path d="M264 210 L314 242" marker-end="url(#b7aAr)"/>
+          <path d="M544 76 L614 76" marker-end="url(#b7aAr)"/>
+          <path d="M544 160 L614 160" marker-end="url(#b7aAr)"/>
+          <path d="M544 244 L614 244" marker-end="url(#b7aAr)"/>
+        </g>
+
+        <text class="b7aL" x="58" y="132">Q2 2018 order lines</text>
+        <text class="b7aS" x="58" y="150">Apr to Jun, by purchase date</text>
+        <text class="b7aL" x="58" y="172">19,947 orders</text>
+        <text class="b7aS" x="58" y="194">delivered 19,646 · shipped 196</text>
+        <text class="b7aS" x="58" y="210">canceled 50 · invoiced 41</text>
+        <text class="b7aS" x="58" y="226">processing 14</text>
+        <text class="b7aS" x="58" y="246">real rows, Olist</text>
+
+        <text class="b7aL" x="336" y="72">any status</text>
+        <text class="b7aS" x="336" y="90">item price only</text>
+        <text class="b7aL" x="336" y="156">any status</text>
+        <text class="b7aS" x="336" y="174">item price + shipping</text>
+        <text class="b7aL" x="336" y="240">delivered only</text>
+        <text class="b7aS" x="336" y="258">item price only</text>
+
+        <text class="b7aV" x="636" y="76">R$ 2,858,289.74</text>
+        <text class="b7aB" x="636" y="94">gmv_placed</text>
+        <text class="b7aV" x="636" y="160">R$ 3,332,156.97</text>
+        <text class="b7aB" x="636" y="178">gmv_placed_with_shipping</text>
+        <text class="b7aV" x="636" y="244">R$ 2,807,156.64</text>
+        <text class="b7aB" x="636" y="262">gmv_delivered</text>
+
+        <text class="b7aN" x="30" y="298">Same rows, same quarter. The spread is R$ 525,000, and only a name says which total a report means.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the middle total is the marketplace-headline style; the bottom one is closest to money that settles</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Five numbers, one quarter, all defensible<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Definition</th><th>Q2 2018 on Olist</th><th>The argument for it</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Placed, any status, items only</strong></td><td>R$ 2,858,289.74</td><td>The demand the stores generated; what the trading team steers</td></tr>
+            <tr><td><strong>Placed, any status, items + shipping</strong></td><td>R$ 3,332,156.97</td><td>What the buyer was charged; matches a marketplace headline that counts shipping</td></tr>
+            <tr><td><strong>Delivered only, items only</strong></td><td>R$ 2,807,156.64</td><td>Closest to the money that settles; what a GMV-linked fee should rest on</td></tr>
+            <tr><td><strong>Delivered only, items + shipping</strong></td><td>R$ 3,273,631.74</td><td>Settled-ish, buyer-side view</td></tr>
+            <tr><td><strong>Payments table, same orders</strong></td><td>R$ 3,332,386.55</td><td>What was actually collected; differs from items + shipping by R$ 229.58</td></tr>
+          </tbody>
+        </table>
+        <p>Cancelled or unavailable orders in the quarter add up to only R$ 8,559.48 across 50 orders, so on this file the status filter moves the total far less than the shipping choice does. On an enabler's own estate, with returns and failed deliveries, the order flips. Either way, the size of the gap is not the point; the point is that a board pack and a brand statement built on two of these rows will disagree, and nobody will know why until somebody opens both queries.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The same spread, on Serai's constructed quarter<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The leader track uses one constructed Serai quarter to make the same point with fees on top. GMV placed including shipping $48.6M, placed excluding shipping $45.0M, settled net of cancellations and returns $39.2M. Divide the same $1,764,000 of retainers and GMV share by each and the take rate reads 3.63, 3.92 or 4.50 percent; drop the retainers and it is 2.00 percent. Every figure there is constructed, and your numbers will differ. The Olist quarter above is the real-rows version: the same spread, measured.</p>
+        <p>The definitions themselves (GMV, take rate, what counts as an order) are taught properly in <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a1-the-gmv-equation.html">the GMV equation session of the ecommerce metrics track</a>. The enabler twist is that an enabler reports someone else's GMV, often on three marketplaces with three conventions, and bills against it.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>A listed marketplace's GMV counts shipping and unsettled orders.</strong> Sea Limited's annual report for fiscal 2019 defines Shopee's GMV as the value of orders on the marketplace and says the calculation "includes shipping and other charges", and it counts each confirmed order regardless of whether the transaction is settled or the item returned. That is a clear, written choice, and it is the middle row of the table. An enabler whose own GMV is delivered-only will always look smaller than the marketplace's figure for the same stores, and that is fine, as long as both definitions are written down.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the registry entry as code</span>
+      <h2>A registry entry is code</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">A metric definition in a wiki page is a hope. The same definition as a YAML entry, read by the code that computes the number, is a contract: change the entry and every number built on it changes with it, in one commit, with a name and a date. Ten fields are enough, and each one has a reader.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 392" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn registry card for gmv_placed with ten fields: description, why_useful, how_used, grain, sql, sources, owner, version, valid_from and change_log. The first three fields feed the board pack, as the three questions a reader asks. Grain, sql and sources feed the dashboard tile. Version, valid_from and change_log feed the CI test, which fails on unversioned drift. The owner is who gets paged when a test fails.">
+        <defs>
+          <filter id="b7bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="83" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <marker id="b7bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b7bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b7bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b7bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b7bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b7bW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b7bA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b7bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b7bH" x="30" y="26">ONE REGISTRY ENTRY, AND WHO READS EACH FIELD</text>
+
+        <g filter="url(#b7bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- the entry card -->
+          <rect x="30" y="44" width="380" height="308" rx="10" transform="rotate(-0.4 220 198)" fill="#FFFFFF"/>
+          <!-- pin doodle -->
+          <circle cx="392" cy="58" r="6" fill="#E0685E" stroke="#8A2330"/>
+          <!-- group brackets -->
+          <path d="M418 86 L426 86 L426 154 L418 154"/>
+          <path d="M418 166 L426 166 L426 232 L418 232"/>
+          <path d="M418 270 L426 270 L426 336 L418 336"/>
+          <!-- three readers -->
+          <rect x="600" y="90" width="250" height="60" rx="10" transform="rotate(0.6 725 120)" fill="#FDF1EF"/>
+          <rect x="600" y="170" width="250" height="60" rx="10" transform="rotate(-0.5 725 200)" fill="#FDF1EF"/>
+          <rect x="600" y="272" width="250" height="60" rx="10" transform="rotate(0.4 725 302)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- arrows -->
+          <path d="M430 120 L594 120" marker-end="url(#b7bAr)"/>
+          <path d="M430 200 L594 200" marker-end="url(#b7bAr)"/>
+          <path d="M430 302 L594 302" marker-end="url(#b7bAr)"/>
+        </g>
+
+        <text class="b7bH" x="50" y="70">gmv_placed:</text>
+        <text class="b7bL" x="50" y="100">description</text><text class="b7bS" x="160" y="100">item value, any status, no shipping</text>
+        <text class="b7bL" x="50" y="126">why_useful</text><text class="b7bS" x="160" y="126">the demand the stores generated</text>
+        <text class="b7bL" x="50" y="152">how_used</text><text class="b7bS" x="160" y="152">weekly review; base of the GMV fee</text>
+        <text class="b7bL" x="50" y="178">grain</text><text class="b7bS" x="160" y="178">order line, by purchase date</text>
+        <text class="b7bL" x="50" y="204">sql</text><text class="b7bS" x="160" y="204">SUM(price), items joined to orders</text>
+        <text class="b7bL" x="50" y="230">sources</text><text class="b7bS" x="160" y="230">orders.purchase_ts, items.price</text>
+        <text class="b7bL" x="50" y="256">owner</text><text class="b7bS" x="160" y="256">finance analytics</text>
+        <text class="b7bL" x="50" y="282">version</text><text class="b7bS" x="160" y="282">1</text>
+        <text class="b7bL" x="50" y="308">valid_from</text><text class="b7bS" x="160" y="308">2018-01-01</text>
+        <text class="b7bL" x="50" y="334">change_log</text><text class="b7bS" x="160" y="334">v1 2018-01-01 first definition</text>
+
+        <text class="b7bA" x="440" y="112">the three questions</text>
+        <text class="b7bA" x="440" y="192">computed, at the grain</text>
+        <text class="b7bA" x="440" y="260">paged when a test fails</text>
+        <text class="b7bA" x="440" y="294">drift and restatement</text>
+
+        <text class="b7bL" x="616" y="116">Board pack</text>
+        <text class="b7bS" x="616" y="136">what it is, why it helps, how it is used</text>
+        <text class="b7bL" x="616" y="196">Dashboard tile</text>
+        <text class="b7bS" x="616" y="216">runs the sql, never its own copy</text>
+        <text class="b7bW" x="616" y="298">CI test</text>
+        <text class="b7bW" x="616" y="318">fails on unversioned drift</text>
+
+        <text class="b7bN" x="30" y="378">Every field has a reader. A field nobody reads is decoration; a reader with no field is a guess.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the test is teal because it is the only reader that says no</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The ten fields, and the three that answer the reader<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Field</th><th>What goes in it</th><th>Who reads it</th></tr></thead>
+          <tbody>
+            <tr><td><code>description</code> + <code>sql</code></td><td>"A clear definition of the metric and how it is calculated"</td><td>Board pack, every analyst</td></tr>
+            <tr><td><code>why_useful</code></td><td>"The reasons why the metric provides useful information"</td><td>Board pack, brand statements</td></tr>
+            <tr><td><code>how_used</code></td><td>"How management uses the metric in managing or monitoring the performance of the business"</td><td>Board pack, the owner</td></tr>
+            <tr><td><code>grain</code></td><td>The row the SQL sums over, and the date it keys on</td><td>Dashboard, anyone joining it</td></tr>
+            <tr><td><code>sources</code></td><td>Table and column for every input: the lineage</td><td>Data engineering, when a source changes</td></tr>
+            <tr><td><code>owner</code></td><td>One team, not a person's name</td><td>Whoever gets paged when a test fails</td></tr>
+            <tr><td><code>version</code>, <code>valid_from</code>, <code>change_log</code></td><td>The history: what changed, when, and whether prior periods were restated</td><td>The CI test, auditors, next year's you</td></tr>
+          </tbody>
+        </table>
+        <p>The quoted wording in the first three rows is the SEC's, below. Put the three questions in the schema as required fields and the reader loads nothing that cannot answer them.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>One reader, and the spec sheet it replaces<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The YAML is half of it. The other half is that exactly one module reads it. If the dashboard parses <code>metrics.yaml</code> with its own code and the board pack script with another, you have two readers and, the first time somebody adds a field, two behaviours. <code>registry.py</code> below is thirty lines, and every consumer imports it: <code>load()</code> refuses an entry with a missing field, <code>compute()</code> runs the entry's own SQL. Nobody writes <code>SUM(price)</code> anywhere else.</p>
+        <p>How to write a good definition in the first place (the one-page spec, the edge cases, the sign-off) is taught in <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/b8-metric-spec-sheet.html">the metric spec sheet session of the ecommerce metrics track</a>, and governance around it in <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a6-metric-governance.html">its metric governance session</a>. The registry is the spec sheet made executable: same content, but now a machine checks it on every change.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>A public checklist for a key metric.</strong> The US SEC's 2020 guidance on key performance indicators in MD&amp;A says the Commission would generally expect, alongside such a metric, a clear definition and how it is calculated, the reasons it provides useful information, and how management uses it. If the calculation changes, it says to consider disclosing the differences, the reasons and the effects on amounts previously reported. Read it here as what it is: a public example of the three questions any serious reader asks of GMV or active sellers, and a good schema for three required fields. What any exchange requires of a listing is a question for counsel, not for a YAML file.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers tests on metric definitions</span>
+      <h2>Tests that fail when a definition drifts</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">Definitions drift for good reasons. Somebody decides cancelled orders should not count, adds one line to the SQL, and the quarter's GMV moves by R$ 8,559.48 without a meeting. The registry cannot stop the decision, and should not. It can refuse to let it happen silently. Three tests do it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn CI gate. A pull request that changes metrics.yaml runs three tests: golden numbers, gmv_placed for Q2 2018 must equal 2,858,289.74; reconciliation, payments against items plus shipping, 229.58 apart, within tolerance; definition change, new SQL needs a version bump and a restatement. All three feed a gate. If all pass, merge and dashboards read the new version. If not, the change is blocked until it is reverted or versioned.">
+        <defs>
+          <filter id="b7cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="97" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <marker id="b7cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b7cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b7cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b7cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b7cB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b7cW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b7cR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b7cA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b7cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b7cH" x="30" y="26">THE CI GATE ON THE REGISTRY</text>
+
+        <g filter="url(#b7cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="110" width="170" height="70" rx="10" transform="rotate(-1.5 115 145)" fill="#FDF1EF"/>
+          <rect x="250" y="50" width="260" height="46" rx="8" transform="rotate(0.6 380 73)" fill="#FFFFFF"/>
+          <rect x="250" y="118" width="260" height="46" rx="8" transform="rotate(-0.5 380 141)" fill="#FFFFFF"/>
+          <rect x="250" y="186" width="260" height="46" rx="8" transform="rotate(0.4 380 209)" fill="#FFFFFF"/>
+          <rect x="560" y="100" width="130" height="90" rx="12" transform="rotate(-0.6 625 145)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- padlock doodle above the gate -->
+          <rect x="614" y="72" width="22" height="18" rx="3"/>
+          <path d="M618 72 L618 66 C618 58 632 58 632 66 L632 72"/>
+          <rect x="730" y="60" width="130" height="50" rx="8" transform="rotate(1.2 795 85)" fill="#FFFFFF"/>
+          <rect x="730" y="170" width="130" height="50" rx="8" transform="rotate(-1.4 795 195)" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <path d="M204 138 L244 76" marker-end="url(#b7cAr)"/>
+          <path d="M204 145 L244 141" marker-end="url(#b7cAr)"/>
+          <path d="M204 152 L244 206" marker-end="url(#b7cAr)"/>
+          <path d="M514 73 L554 124" marker-end="url(#b7cAr)"/>
+          <path d="M514 141 L554 145" marker-end="url(#b7cAr)"/>
+          <path d="M514 209 L554 166" marker-end="url(#b7cAr)"/>
+          <path d="M694 128 L724 90" marker-end="url(#b7cAr)"/>
+          <path d="M694 162 L724 190" marker-end="url(#b7cAr)"/>
+        </g>
+
+        <text class="b7cL" x="46" y="140">pull request</text>
+        <text class="b7cS" x="46" y="158">edits metrics.yaml</text>
+
+        <text class="b7cL" x="266" y="70">golden numbers</text>
+        <text class="b7cS" x="266" y="87">gmv_placed Q2 2018 = 2,858,289.74</text>
+        <text class="b7cL" x="266" y="138">reconciliation</text>
+        <text class="b7cS" x="266" y="155">payments vs items + shipping: 229.58</text>
+        <text class="b7cL" x="266" y="206">definition change</text>
+        <text class="b7cS" x="266" y="223">new sql needs v+1 and a restatement</text>
+
+        <text class="b7cW" x="576" y="140">the gate</text>
+        <text class="b7cW" x="576" y="160">all pass?</text>
+
+        <text class="b7cA" x="746" y="52">yes</text>
+        <text class="b7cB" x="746" y="82">merge</text>
+        <text class="b7cS" x="746" y="99">dashboards read v2</text>
+        <text class="b7cR" x="746" y="192">blocked</text>
+        <text class="b7cS" x="746" y="209">revert, or version</text>
+        <text class="b7cA" x="746" y="238">no</text>
+
+        <text class="b7cN" x="30" y="268">The gate does not judge the new definition. It refuses a silent one.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a definition change is allowed; an unannounced one is the only thing blocked</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Three tests, three different failures<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Golden numbers.</strong> Freeze one past period and write down the approved value of each metric: <code>gmv_placed</code> for Q2 2018 is R$ 2,858,289.74, <code>active_sellers_1000</code> is 552. The data for a closed quarter does not change, so if the computed value moves, the definition did. This is the test that catches the one-line SQL edit.</p>
+        <p><strong>Reconciliation.</strong> Two independent routes to roughly the same money should agree within a tolerance you write down in advance. Items plus shipping for the quarter is R$ 3,332,156.97; the payments table for the same orders is R$ 3,332,386.55; the gap is R$ 229.58. The tolerance in the build-along is 0.01 percent of payments, R$ 333.24. When a join starts fanning out or a table is loaded twice, this test fails first.</p>
+        <p><strong>Definition change.</strong> Store a fingerprint of each approved SQL next to its version. If the SQL changes and the version does not, or the change log has no entry that says prior periods were restated, fail. This is the test that turns "somebody tidied the query" into a reviewed decision.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What a restatement is, in practice<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>When <code>gmv_placed</code> moves to v2, three things happen in the same commit: the version goes up, the change log says what changed and why, and every prior period that anyone will compare against is recomputed on v2 and the golden value updated. Last year's board pack is not edited; next year's shows both, with a line saying which definition each column uses. A trend that crosses a definition change without restating is the most common way a chart lies with every number on it correct.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Constructed, and common: two take rates in one meeting.</strong> On Serai's constructed quarter, the finance deck divides fees by GMV placed excluding shipping and shows 3.92 percent; the brand team's deck divides by settled GMV and shows 4.50 percent. Both queries are correct and both are called "take rate". With a registry, the two numbers have two names, <code>take_rate_placed</code> and <code>take_rate_settled</code>, and the board sees one of them with its definition printed under it. Every figure in this story is constructed; your numbers will differ.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Write the registry and test it on Olist</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Five entries, one reader, three tests, then one deliberate drift to watch the gate close. The code below ran on the full Olist file with Python 3, pandas 2.1 and PyYAML 6.0; every output line is pasted exactly as it printed. If you do not have PyYAML, save the registry as <code>metrics.json</code> and swap <code>yaml.safe_load</code> for <code>json.load</code>: the reader and the tests do not change.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 258" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline. metrics.yaml with five entries and ten fields feeds registry.py, the one reader, which also reads three Olist CSVs. The reader computes five numbers for Q2 2018 through SQL. test_registry.py checks them against golden values, a reconciliation and the approved SQL hashes in metrics.lock.json. The result is all pass, then after one drifted line, two failures.">
+        <defs>
+          <filter id="b7dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="109" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b7dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b7dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b7dH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b7dL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b7dS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b7dB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b7dW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b7dR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b7dN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b7dH" x="30" y="26">REGISTRY, READER, METRICS, TESTS</text>
+
+        <g filter="url(#b7dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="60" width="140" height="64" rx="10" transform="rotate(-1 100 92)" fill="#FDF1EF"/>
+          <rect x="200" y="60" width="140" height="64" rx="10" transform="rotate(0.8 270 92)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="370" y="60" width="140" height="64" rx="10" transform="rotate(-0.7 440 92)" fill="#FFFFFF"/>
+          <rect x="540" y="60" width="140" height="64" rx="10" transform="rotate(0.9 610 92)" fill="#FFFFFF"/>
+          <rect x="710" y="60" width="140" height="64" rx="10" transform="rotate(-1.2 780 92)" fill="#FFFFFF"/>
+          <rect x="200" y="170" width="140" height="46" rx="8" transform="rotate(-1.5 270 193)" fill="url(#b7dHc)"/>
+          <rect x="540" y="170" width="140" height="46" rx="8" transform="rotate(1.3 610 193)" fill="#FDF1EF"/>
+          <!-- tick doodle -->
+          <path d="M822 72 L828 80 L840 64" stroke="#0E6F68"/>
+          <path d="M172 92 L194 92" marker-end="url(#b7dAr)"/>
+          <path d="M342 92 L364 92" marker-end="url(#b7dAr)"/>
+          <path d="M512 92 L534 92" marker-end="url(#b7dAr)"/>
+          <path d="M682 92 L704 92" marker-end="url(#b7dAr)"/>
+          <path d="M270 166 L270 130" marker-end="url(#b7dAr)"/>
+          <path d="M610 166 L610 130" marker-end="url(#b7dAr)"/>
+        </g>
+
+        <text class="b7dL" x="44" y="88">metrics.yaml</text>
+        <text class="b7dS" x="44" y="106">5 entries, 10 fields</text>
+        <text class="b7dW" x="214" y="88">registry.py</text>
+        <text class="b7dW" x="214" y="106">the one reader</text>
+        <text class="b7dL" x="384" y="88">five numbers</text>
+        <text class="b7dS" x="384" y="106">Q2 2018, via SQL</text>
+        <text class="b7dL" x="554" y="88">test_registry.py</text>
+        <text class="b7dS" x="554" y="106">golden, recon, version</text>
+        <text class="b7dB" x="724" y="88">ALL PASS</text>
+        <text class="b7dR" x="724" y="106">drift: 2 FAILED</text>
+
+        <text class="b7dL" x="214" y="190">Olist CSVs</text>
+        <text class="b7dS" x="214" y="207">3 tables, real rows</text>
+        <text class="b7dL" x="554" y="190">metrics.lock.json</text>
+        <text class="b7dS" x="554" y="207">approved sql hashes</text>
+
+        <text class="b7dN" x="30" y="244">Change one line of YAML and every number, and every test, moves with it. That is the point.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the reader is teal because nothing else is allowed to parse the YAML</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Point at the data and check the one dependency.</strong> Work in a scratch folder, not inside a repo. The CSVs are the kagglehub download from session 1; the path below is where kagglehub caches them.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · setup</span>pip install pyyaml pandas
+python3 -c "import yaml, pandas; print(yaml.__version__, pandas.__version__)"
+# 6.0.3 2.1.4
+ls ~/.cache/kagglehub/datasets/olistbr/brazilian-ecommerce/versions/2/
+# olist_orders_dataset.csv, olist_order_items_dataset.csv, olist_order_payments_dataset.csv, ...</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the registry: three GMVs, two active-seller counts.</strong> Each entry answers the three reader questions (<code>description</code>, <code>why_useful</code>, <code>how_used</code>), carries its SQL, its grain, its lineage and its history. The dates are half-open, <code>&gt;= start</code> and <code>&lt; end</code>, so a quarter never double-counts its last second.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · metrics.yaml</span># metrics.yaml - one entry per name, read by everything
+gmv_placed:
+  description: Item value of every order placed in the period, any status, excluding shipping
+  why_useful: The demand the stores generated, before cancellations and fulfilment
+  how_used: Weekly trading review; the base of the GMV-linked fee
+  grain: order line, by order purchase date
+  sql: |
+    SELECT SUM(i.price) FROM items i JOIN orders o USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+  sources: [olist_orders_dataset.order_purchase_timestamp, olist_order_items_dataset.price]
+  owner: finance analytics
+  version: 1
+  valid_from: 2018-01-01
+  change_log:
+    - {version: 1, date: 2018-01-01, change: first definition}
+
+gmv_placed_with_shipping:
+  description: Item value plus shipping of every order placed, any status
+  why_useful: Comparable with a marketplace headline GMV that includes shipping
+  how_used: Board pack, next to the marketplace's own figure
+  grain: order line, by order purchase date
+  sql: |
+    SELECT SUM(i.price + i.freight_value) FROM items i JOIN orders o USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+  sources: [olist_orders_dataset.order_purchase_timestamp, olist_order_items_dataset.price,
+            olist_order_items_dataset.freight_value]
+  owner: finance analytics
+  version: 1
+  valid_from: 2018-01-01
+  change_log:
+    - {version: 1, date: 2018-01-01, change: first definition}
+
+gmv_delivered:
+  description: Item value of orders placed in the period and delivered, excluding shipping
+  why_useful: Closest to the money that actually settles
+  how_used: Brand statements; the settled-GMV share
+  grain: order line, by order purchase date
+  sql: |
+    SELECT SUM(i.price) FROM items i JOIN orders o USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+      AND o.order_status = 'delivered'
+  sources: [olist_orders_dataset.order_status, olist_order_items_dataset.price]
+  owner: finance analytics
+  version: 1
+  valid_from: 2018-01-01
+  change_log:
+    - {version: 1, date: 2018-01-01, change: first definition}
+
+active_sellers_any:
+  description: Sellers with at least one order line placed in the period, any status
+  why_useful: How many stores are trading at all
+  how_used: Store ops coverage
+  grain: seller, per period
+  sql: |
+    SELECT COUNT(DISTINCT i.seller_id) FROM items i JOIN orders o USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+  sources: [olist_orders_dataset.order_purchase_timestamp, olist_order_items_dataset.seller_id]
+  owner: store ops
+  version: 1
+  valid_from: 2018-01-01
+  change_log:
+    - {version: 1, date: 2018-01-01, change: first definition}
+
+active_sellers_1000:
+  description: Sellers with at least R$ 1,000 of delivered item value placed in the period
+  why_useful: Stores trading at a level that pays for their service
+  how_used: Board pack active-store count
+  grain: seller, per period
+  sql: |
+    SELECT COUNT(*) FROM (
+      SELECT i.seller_id FROM items i JOIN orders o USING (order_id)
+      WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+        AND o.order_status = 'delivered'
+      GROUP BY i.seller_id HAVING SUM(i.price) &gt;= 1000)
+  sources: [olist_orders_dataset.order_status, olist_order_items_dataset.seller_id,
+            olist_order_items_dataset.price]
+  owner: store ops
+  version: 1
+  valid_from: 2018-01-01
+  change_log:
+    - {version: 1, date: 2018-01-01, change: first definition}</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the one reader.</strong> <code>load()</code> refuses any entry missing a required field, so an entry that cannot answer the three questions never reaches a dashboard. <code>compute()</code> runs the entry's own SQL with named parameters; SQLite is in the standard library, so the SQL in the YAML is exactly what runs.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · registry.py</span># registry.py - the ONE reader; dashboards, board pack and tests import it
+import sqlite3, yaml, pandas as pd
+from pathlib import Path
+
+DATA = Path.home() / ".cache/kagglehub/datasets/olistbr/brazilian-ecommerce/versions/2"
+REQUIRED = ["description", "why_useful", "how_used", "grain", "sql", "sources",
+            "owner", "version", "valid_from", "change_log"]
+
+def load(path="metrics.yaml"):
+    reg = yaml.safe_load(Path(path).read_text())
+    for name, m in reg.items():
+        missing = [f for f in REQUIRED if f not in m]
+        assert not missing, f"{name} is missing {missing}"
+    return reg
+
+def connect():
+    db = sqlite3.connect(":memory:")
+    for t, f in {"orders": "olist_orders_dataset.csv", "items": "olist_order_items_dataset.csv",
+                 "payments": "olist_order_payments_dataset.csv"}.items():
+        pd.read_csv(DATA / f).to_sql(t, db, index=False)
+    return db
+
+def compute(reg, db, name, start, end):
+    (value,) = db.execute(reg[name]["sql"], {"start": start, "end": end}).fetchone()
+    return round(value, 2)</div>
+      </div>
+      <div class="step">
+        <p><strong>Compute every metric for Q2 2018.</strong> Five names, five numbers, and each one matches the table in Part 1. Note what the two seller counts say: 1,680 sellers traded at all, but only 552 sold R$ 1,000 of delivered goods. The file has 3,095 sellers, and 1,653 had a delivered order in the quarter. Four honest answers to "how many active sellers".</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · run.py</span>from registry import load, connect, compute
+reg, db = load(), connect()
+Q2 = ("2018-04-01", "2018-07-01")
+for name in reg:
+    print(f"{name:&lt;26} v{reg[name]['version']}  {compute(reg, db, name, *Q2):&gt;14,}")
+# prints:
+gmv_placed                 v1    2,858,289.74
+gmv_placed_with_shipping   v1    3,332,156.97
+gmv_delivered              v1    2,807,156.64
+active_sellers_any         v1           1,680
+active_sellers_1000        v1             552</div>
+      </div>
+      <div class="step">
+        <p><strong>Lock the approved definitions.</strong> A short hash of each entry's SQL (whitespace normalised, so re-indenting is not a change) and its version, written to a file you commit next to the YAML. Re-run this only when a definition change has been reviewed.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · lock.py</span># lock.py - run once when a definition is approved; commit metrics.lock.json with the YAML
+import json, hashlib
+from registry import load
+fp = lambda sql: hashlib.sha256(" ".join(sql.split()).encode()).hexdigest()[:12]
+lock = {n: {"version": m["version"], "sql": fp(m["sql"])} for n, m in load().items()}
+json.dump(lock, open("metrics.lock.json", "w"), indent=1)
+print(lock["gmv_placed"])
+# prints:
+{'version': 1, 'sql': '9c82b797f930'}</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the three tests, with plain asserts, and watch them pass.</strong> Golden values for the frozen quarter, the payments reconciliation with its tolerance stated in the code, and the definition-change check against the lock file. In CI this is the file that runs on every pull request touching <code>metrics.yaml</code>.</p>
+        <div class="prompt-box good"><span class="label">★ Step 6 · test_registry.py</span>import json, hashlib
+from registry import load, connect, compute
+
+reg, db = load(), connect()
+Q2 = ("2018-04-01", "2018-07-01")
+fp = lambda sql: hashlib.sha256(" ".join(sql.split()).encode()).hexdigest()[:12]
+
+# 1 golden numbers: the approved value of each metric for one frozen quarter
+GOLDEN = {"gmv_placed": 2858289.74, "gmv_placed_with_shipping": 3332156.97,
+          "gmv_delivered": 2807156.64, "active_sellers_any": 1680, "active_sellers_1000": 552}
+fails = []
+for name, want in GOLDEN.items():
+    got = compute(reg, db, name, *Q2)
+    ok = got == want
+    print(f"golden   {name:&lt;26} {got:&gt;14,}  {'PASS' if ok else 'FAIL, want ' + format(want, ',')}")
+    if not ok: fails.append(name)
+
+# 2 reconciliation: items + shipping against the payments table, same orders
+(paid,) = db.execute("""SELECT ROUND(SUM(p.payment_value), 2) FROM payments p
+    WHERE p.order_id IN (SELECT o.order_id FROM orders o JOIN items i USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= ? AND o.order_purchase_timestamp &lt; ?)""", Q2).fetchone()
+gap = round(paid - compute(reg, db, "gmv_placed_with_shipping", *Q2), 2)
+TOL = 0.0001 * paid                     # stated tolerance: 0.01 percent of payments
+print(f"recon    payments {paid:,}  gap {gap:,}  tolerance {TOL:,.2f}  {'PASS' if abs(gap) &lt;= TOL else 'FAIL'}")
+if abs(gap) &gt; TOL: fails.append("reconciliation")
+
+# 3 definition change: new SQL needs a version bump and a change_log entry that says restated
+lock = json.load(open("metrics.lock.json"))
+for name, m in reg.items():
+    changed = fp(m["sql"]) != lock[name]["sql"]
+    bumped = m["version"] &gt; lock[name]["version"]
+    logged = any(e["version"] == m["version"] and "restated" in e["change"] for e in m["change_log"])
+    if changed and not (bumped and logged):
+        print(f"version  {name:&lt;26} SQL changed, still v{m['version']}, no restatement: FAIL")
+        fails.append(name + " version")
+print("ALL PASS" if not fails else f"{len(fails)} FAILED: {fails}")
+assert not fails
+# prints:
+golden   gmv_placed                   2,858,289.74  PASS
+golden   gmv_placed_with_shipping     3,332,156.97  PASS
+golden   gmv_delivered                2,807,156.64  PASS
+golden   active_sellers_any                  1,680  PASS
+golden   active_sellers_1000                   552  PASS
+recon    payments 3,332,386.55  gap 229.58  tolerance 333.24  PASS
+ALL PASS</div>
+      </div>
+      <div class="step">
+        <p><strong>Now drift one definition, on purpose.</strong> Somebody decides cancelled orders should not count in <code>gmv_placed</code>, adds one reasonable line to its SQL, and does not touch the version. Run the tests again. The golden test catches the number moving by exactly the R$ 8,559.48 of cancelled and unavailable orders, and the version test names the missing bump. The script ends in an <code>AssertionError</code>, exit code 1, and CI stops the merge.</p>
+        <div class="prompt-box good"><span class="label">★ Step 7 · the drift</span># metrics.yaml, gmv_placed only: one line added, version still 1
+  sql: |
+    SELECT SUM(i.price) FROM items i JOIN orders o USING (order_id)
+    WHERE o.order_purchase_timestamp &gt;= :start AND o.order_purchase_timestamp &lt; :end
+      AND o.order_status NOT IN ('canceled', 'unavailable')
+
+python3 test_registry.py
+# prints:
+golden   gmv_placed                   2,849,730.26  FAIL, want 2,858,289.74
+golden   gmv_placed_with_shipping     3,332,156.97  PASS
+golden   gmv_delivered                2,807,156.64  PASS
+golden   active_sellers_any                  1,680  PASS
+golden   active_sellers_1000                   552  PASS
+recon    payments 3,332,386.55  gap 229.58  tolerance 333.24  PASS
+version  gmv_placed                 SQL changed, still v1, no restatement: FAIL
+2 FAILED: ['gmv_placed', 'gmv_placed version']
+# then: AssertionError (exit code 1)</div>
+      </div>
+      <div class="step">
+        <p><strong>Decide, then make the decision visible.</strong> Two honest ways out, and neither is "update the golden number and move on". Either the new filter is a different metric (add <code>gmv_placed_net</code> as its own entry and leave <code>gmv_placed</code> alone), or it replaces the old one (bump to version 2, add a change log entry that says prior periods were restated, recompute Q2 2018 on v2, update the golden value and re-run <code>lock.py</code>, all in one reviewed commit). Revert the drift before homework: <code>python3 test_registry.py</code> should print <code>ALL PASS</code> again.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Extend the session 1 registry, do not start a second one.</strong> The estate registry already knows every table's grain and owner; the metric registry's <code>sources</code> should point at those same table names, so a grain fix in one place reaches every metric built on it. Two registries that each describe <code>items</code> will disagree the first week somebody edits one.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 8</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Find the three most-quoted numbers in your team's last board pack or brand review. For each, find every query that computes it. Write down how many distinct definitions you found, and which one the slide used.</li>
+      <li>Write registry entries for those three, with all ten fields. Any field you cannot fill is a finding: an empty <code>how_used</code> means nobody decides anything with it, an empty <code>owner</code> means nobody will notice when it breaks.</li>
+      <li>Pick one closed period and record golden values for all three. Add one reconciliation between two independent routes to the same money, and write the tolerance down before you run it.</li>
+      <li>Drift one definition on a branch, as in Step 7, and confirm your tests fail. A test suite you have never seen fail is not yet a test suite.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 7 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · On Olist Q2 2018, one query returns R$ 2,858,289.74 and another returns R$ 3,332,156.97, both labelled GMV. What should the registry do?</p>
+      <button class="qopt" type="button">A · Pick the larger one, since marketplaces report GMV with shipping</button>
+      <button class="qopt" type="button">B · Average them, so neither team is wrong</button>
+      <button class="qopt" type="button">C · Give each its own name and definition, gmv_placed and gmv_placed_with_shipping, so no report can say "GMV" and mean both</button>
+      <button class="qopt" type="button">D · Delete the one with shipping, since shipping is not merchandise</button>
+      <p class="qwhy">Both are defensible; the first is item value, the second is what the buyer was charged, which is the marketplace-headline convention. The failure is one word covering two numbers. Two names end it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Which three fields map onto the three questions the SEC's 2020 guidance lists for a key metric?</p>
+      <button class="qopt" type="button">A · description (with the sql), why_useful and how_used: what it is and how it is calculated, why it is useful, and how management uses it</button>
+      <button class="qopt" type="button">B · owner, version and valid_from</button>
+      <button class="qopt" type="button">C · grain, sources and sql</button>
+      <button class="qopt" type="button">D · change_log alone, because the guidance is about changes</button>
+      <p class="qwhy">The guidance expects a clear definition and calculation, the reasons the metric is useful, and how management uses it. The other fields matter too, for lineage and history, but those three are the reader's questions, and making them required means no entry loads without them.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">3 · After a one-line SQL edit, the golden test reports gmv_placed as 2,849,730.26, want 2,858,289.74. What is the right response?</p>
+      <button class="qopt" type="button">A · Update the golden value to 2,849,730.26 so the build goes green</button>
+      <button class="qopt" type="button">B · Widen the tolerance on the golden test to 1 percent</button>
+      <button class="qopt" type="button">C · Delete the golden test, since the data for Q2 2018 has not changed</button>
+      <button class="qopt" type="button">D · Decide whether the edit is a new metric or v2 of this one; if v2, bump the version, log the restatement, then update the golden value and the lock in one reviewed commit</button>
+      <p class="qwhy">The data for a closed quarter cannot move, so the definition did, by exactly the R$ 8,559.48 of cancelled and unavailable orders. The test is working. The fix is to make the change a visible decision, not to make the test quiet.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">GMV variants on one real quarter</span><span class="note">Brazilian E-Commerce Public Dataset by Olist, Kaggle, CC BY-NC-SA 4.0; Q2 2018 totals, status counts and seller counts measured in this build; the Serai variants are constructed</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The metric registry as code</span><span class="note">Practice: YAML entry, one reader, golden, reconciliation and definition-change tests; spec-sheet method linked to the ecommerce metrics track, not re-taught</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">SEC 2020 guidance on key metrics</span><span class="note">U.S. Securities and Exchange Commission, "Commission Guidance on Management's Discussion and Analysis of Financial Condition and Results of Operations", Release No. 33-10751, February 2020; read at source, used as a checklist, not legal teaching</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Sea's GMV definition</span><span class="note">Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions; read at source</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 7 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>One name, one number</b><span>Three defensible GMVs get three names. "GMV" alone is not a metric.</span></div>
+      <div class="cheat-item"><b>Ten fields</b><span>description, why_useful, how_used, grain, sql, sources, owner, version, valid_from, change_log.</span></div>
+      <div class="cheat-item"><b>Three reader questions</b><span>What it is and how it is calculated, why it is useful, how it is used. Required fields.</span></div>
+      <div class="cheat-item"><b>One reader</b><span>Everything imports registry.py; nothing else parses the YAML or re-types the SQL.</span></div>
+      <div class="cheat-item"><b>Three tests</b><span>Golden numbers on a frozen period, a reconciliation with a stated tolerance, a version check.</span></div>
+      <div class="cheat-item"><b>Drift is allowed</b><span>Silent drift is not. Version, log, restate, re-lock, in one reviewed commit.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>You have a registry that names every number and a gate that refuses a silent change. Session 8 is the bench: the identity ladder runs on real Olist orders in your browser to show which join keys survive the marketplaces' masking, and the roadmap sequencer orders Serai's use cases by what the estate can actually obtain.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 7 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b6-content-to-creator-yield.html">← Prev: Content to creator yield</a> &nbsp;·&nbsp; <a href="b8-the-enabler-bench.html">Next: The enabler bench →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

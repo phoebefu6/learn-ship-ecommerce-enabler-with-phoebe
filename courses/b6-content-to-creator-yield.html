@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 6 of 8. Follow content through a tagged archive to creator yield: a persistent asset id carried into the listing, the stream and the creator's link, settled rather than attributed GMV, and three rankings of six constructed creators that disagree for good reasons.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Content to creator yield - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 6 of 8. Tag the asset, join the order back, rank creators on settled GMV, and pick the denominator that answers the question you were asked.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b6-content-to-creator-yield.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Content to creator yield - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 6 of 8. One asset id, attributed versus settled, three rankings of six creators.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 6 · Content to creator yield - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 6 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 6 of 8</div>
+    <h1>Content to <span class="accent">creator yield</span></h1>
+    <p class="sub">Serai's studio makes thousands of assets a quarter and its creator network places them in listings, live streams and creators' own links. The platforms report, at best, a total per creator, credited before anyone has cancelled or sent anything back. Tonight you follow the second dependency chain from session 1 end to end: stamp every asset with an id that survives the trip, join the order back to it, count only what settled, and then rank six creators three ways and watch the list turn upside down. Every creator figure on this page is constructed.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Analysts</span>
+      <span class="chip audience">Python, pandas</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-19 · Tag, settle, divide</span>
+      <span class="a3" style="flex:5">19-41 · Build-along: six creators, three ways</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits on the track</h2>
+    </div>
+    <p class="lede">Sessions 4 and 5 were the live channel: an event spec per minute, then the stage metrics as code. Tonight moves to the content half of the estate. Session 1 drew two chains that carry most of the value, and this is the second one: content archive, then tagged archive, then creator and content yield. The archive is owned; the yield is what brands ask about every quarter review; the tag in the middle is the link nobody budgets for. The data is six creators and one quarter, <strong>constructed</strong>, so your numbers will differ. The arithmetic and the traps will not.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A creator table in pandas that separates attributed from settled GMV, three rankings that answer three different questions, a commission check that shows what paying on attributed costs, and a working sketch of the asset-tag join that lets an enabler measure content the platforms never report back.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the content to tagged archive to yield chain</span>
+      <h2>The chain: content, tag, order</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">An asset is only measurable if something on the order points back at it. The platforms credit a creator with a total, and the listing with a total, but not "this 30-second clip, placed in this stream, sold these units". So the enabler builds that link itself: a persistent asset id stamped at export, carried into every placement, and read back off the order.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn flow. One asset, id A-101, a video for SKU SK-7, is stamped with its id at export. The id travels into three placements: a listing, where the listing id is mapped to A-101; a live stream, where the run sheet logs A-101; and a creator's link, whose sub-id is A-101. Orders from all three keep the asset id. A return path joins the orders back on asset_id into the tagged archive, which gives settled GMV per asset, and back to the asset itself.">
+        <defs>
+          <filter id="b6aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="61" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b6aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b6aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b6aH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6aL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6aS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b6aB { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #0A4D48; }
+          .b6aA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b6aW { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #FFFFFF; }
+          .b6aN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b6aH" x="30" y="26">ONE ASSET, ONE ID, THREE PLACEMENTS, ONE WAY BACK</text>
+        <text class="b6aS" x="420" y="26">the id has to survive the trip, or the order points at nothing</text>
+
+        <g filter="url(#b6aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- rubber stamp doodle -->
+          <rect x="150" y="84" width="40" height="14" rx="3" transform="rotate(-6 170 91)" fill="#FFFFFF"/>
+          <path d="M170 84 L170 70 M162 70 L178 70"/>
+          <!-- the asset -->
+          <rect x="30" y="120" width="180" height="90" rx="10" transform="rotate(-0.8 120 165)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- three placements -->
+          <rect x="320" y="56" width="200" height="56" rx="10" transform="rotate(0.7 420 84)" fill="#FFFFFF"/>
+          <rect x="320" y="138" width="200" height="56" rx="10" transform="rotate(-0.6 420 166)" fill="#FFFFFF"/>
+          <rect x="320" y="220" width="200" height="56" rx="10" transform="rotate(0.5 420 248)" fill="#FFFFFF"/>
+          <!-- orders -->
+          <rect x="630" y="120" width="220" height="90" rx="10" transform="rotate(0.6 740 165)" fill="url(#b6aHc)"/>
+          <!-- the join -->
+          <rect x="300" y="296" width="240" height="44" rx="10" transform="rotate(-0.4 420 318)" fill="#FDF1EF"/>
+          <!-- out -->
+          <path d="M214 150 L314 86" marker-end="url(#b6aAr)"/>
+          <path d="M214 166 L314 166" marker-end="url(#b6aAr)"/>
+          <path d="M214 182 L314 246" marker-end="url(#b6aAr)"/>
+          <!-- into orders -->
+          <path d="M526 86 L624 146" marker-end="url(#b6aAr)"/>
+          <path d="M526 166 L624 166" marker-end="url(#b6aAr)"/>
+          <path d="M526 246 L624 186" marker-end="url(#b6aAr)"/>
+          <!-- back -->
+          <path d="M740 214 L740 318 L548 318" marker-end="url(#b6aAr)"/>
+          <path d="M294 318 L120 318 L120 218" marker-end="url(#b6aAr)"/>
+        </g>
+
+        <text class="b6aW" x="46" y="148">ASSET A-101</text>
+        <text class="b6aW" x="46" y="168">video for SKU SK-7</text>
+        <text class="b6aW" x="46" y="188">id stamped at export</text>
+
+        <text class="b6aL" x="336" y="80">Listing</text>
+        <text class="b6aS" x="336" y="98">listing id mapped to A-101</text>
+        <text class="b6aL" x="336" y="162">Live stream</text>
+        <text class="b6aS" x="336" y="180">run sheet logs A-101</text>
+        <text class="b6aL" x="336" y="244">Creator's link</text>
+        <text class="b6aS" x="336" y="262">link sub-id = A-101</text>
+
+        <text class="b6aL" x="646" y="150">Orders</text>
+        <text class="b6aL" x="646" y="170">each keeps asset_id</text>
+        <text class="b6aS" x="646" y="190">plus status: settled or not</text>
+
+        <text class="b6aA" x="752" y="262">join on asset_id</text>
+        <text class="b6aB" x="316" y="323">tagged archive: settled GMV per asset</text>
+
+        <text class="b6aN" x="30" y="364">No tag, no join: the platform can tell you what a creator sold, never which asset sold it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the teal box is the only thing Serai fully owns, which is why the id has to start there</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>What the tag is, and where it has to ride<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The tag is one id per asset, minted in Serai's archive when the asset is exported, never re-minted when it is re-cut or re-posted. A re-cut is a new asset with a parent id; a re-post is the same asset in a new placement. Get that distinction wrong and one clip shows up as five, each with a fifth of the credit.</p>
+        <p>Then the id has to ride on something the order will carry back. Each placement offers a different carrier:</p>
+        <table class="clean">
+          <thead><tr><th>Placement</th><th>Where the id rides</th><th>What the order gives back</th><th>Grain you can reach</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Listing</strong></td><td>Serai's catalogue maps the listing's content version to the asset id</td><td>Listing id and order time</td><td>Asset per listing version; mixed if two assets run at once</td></tr>
+            <tr><td><strong>Live stream</strong></td><td>The run sheet logs which asset was on screen, per minute</td><td>Stream id and minute, from session 4's minute table</td><td>Asset per stream minute</td></tr>
+            <tr><td><strong>Creator's link</strong></td><td>A sub-id on the affiliate link, set to the asset id</td><td>The sub-id on the attributed order</td><td>Asset per creator, cleanly</td></tr>
+          </tbody>
+        </table>
+        <p>The link is the cleanest carrier and the stream the most work, which is exactly why session 4 put one clock on the minute table. The platforms do not hand back content-level performance in a form you can pipe into a warehouse; the tag is how an enabler builds its own.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the archive is owned and the yield is only partial<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>On the obtainability scale from <a href="b1-seven-domains.html">session 1</a>, the content archive is <strong>owned</strong>: Serai made every file and knows who, when and for which SKU. Creator results are <strong>partial</strong>: the affiliate report returns what the platform credited to each creator, in the platform's window, and nothing about which asset did the work. The tag does not make the platform's data any fuller. It makes Serai's side rich enough that a thin order row (an id, a sub-id, a minute) is enough to join on.</p>
+        <p>This is also why the tag has to exist before anyone asks for yield. An order placed last quarter against an untagged asset cannot be credited retroactively; there is nothing on the order to join. Every quarter without the tag is a quarter of yield you will never be able to report.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Constructed: the brand that asked "which video".</strong> A skincare brand on Serai's books (constructed) asked at its quarter review which of the 40 assets made that quarter it should re-shoot. The affiliate report said creator C4 sold well; it could not say with what. Serai's answer was a promise to tag from next quarter. The same review a quarter later had an answer per asset, because the link sub-ids had been set at export. Nothing about the platform changed; the join did.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers attributed versus settled GMV</span>
+      <h2>Attributed is not settled</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Attributed GMV is the value of orders the platform credited to a creator. Settled GMV is what is left after cancellations and returns, the money that actually reached the brand. The gap is not constant across creators, so the ranking changes, and if commission is paid on the attributed number, so does the bill.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 356" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hand-drawn paired bars for six constructed creators, ordered by attributed GMV. C1 attributed 42,000 dollars, settled 29,400. C5 attributed 31,000, settled 19,840, highlighted. C3 attributed 25,000, settled 21,250. C2 attributed 18,500, settled 16,650. C6 attributed 12,400, settled 11,160. C4 attributed 9,800, settled 9,212. C5 is second by attributed and third by settled; C3 is third by attributed and second by settled.">
+        <defs>
+          <filter id="b6bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="67" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b6bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b6bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b6bH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6bL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6bS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b6bB { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #0A4D48; }
+          .b6bR { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #991B1B; }
+          .b6bA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b6bN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b6bH" x="30" y="26">ATTRIBUTED VERSUS SETTLED, ONE QUARTER, CONSTRUCTED</text>
+        <text class="b6bS" x="468" y="44">attributed (commission is paid on this)</text>
+        <text class="b6bS" x="700" y="44">settled</text>
+
+        <g filter="url(#b6bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- legend swatches -->
+          <rect x="446" y="34" width="14" height="12" rx="2" fill="url(#b6bHc)"/>
+          <rect x="678" y="34" width="14" height="12" rx="2" fill="#8A2330" stroke="#8A2330"/>
+          <!-- C1 -->
+          <rect x="64" y="70" width="40" height="200" rx="3" transform="rotate(0.5 84 170)" fill="url(#b6bHc)"/>
+          <rect x="112" y="130" width="40" height="140" rx="3" transform="rotate(-0.5 132 200)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- C5 -->
+          <rect x="199" y="122.4" width="40" height="147.6" rx="3" transform="rotate(-0.5 219 196)" fill="url(#b6bHc)"/>
+          <rect x="247" y="175.5" width="40" height="94.5" rx="3" transform="rotate(0.6 267 223)" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- C3 -->
+          <rect x="334" y="151" width="40" height="119" rx="3" transform="rotate(0.4 354 210)" fill="url(#b6bHc)"/>
+          <rect x="382" y="168.8" width="40" height="101.2" rx="3" transform="rotate(-0.4 402 219)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- C2 -->
+          <rect x="469" y="181.9" width="40" height="88.1" rx="3" transform="rotate(-0.5 489 226)" fill="url(#b6bHc)"/>
+          <rect x="517" y="190.7" width="40" height="79.3" rx="3" transform="rotate(0.5 537 230)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- C6 -->
+          <rect x="604" y="211" width="40" height="59" rx="3" transform="rotate(0.6 624 240)" fill="url(#b6bHc)"/>
+          <rect x="652" y="216.9" width="40" height="53.1" rx="3" transform="rotate(-0.6 672 243)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- C4 -->
+          <rect x="739" y="223.3" width="40" height="46.7" rx="3" transform="rotate(-0.5 759 247)" fill="url(#b6bHc)"/>
+          <rect x="787" y="226.1" width="40" height="43.9" rx="3" transform="rotate(0.5 807 248)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- baseline -->
+          <path d="M40 271 L860 271"/>
+          <!-- rank swap arrow between C5 and C3 labels -->
+          <path d="M270 318 C300 332 350 332 380 318" stroke="#BE3745" marker-end="url(#b6bAr)"/>
+        </g>
+
+        <text class="b6bS" x="84" y="64" text-anchor="middle">42.0k</text>
+        <text class="b6bS" x="132" y="124" text-anchor="middle">29.4k</text>
+        <text class="b6bS" x="219" y="116" text-anchor="middle">31.0k</text>
+        <text class="b6bB" x="267" y="169" text-anchor="middle">19.8k</text>
+        <text class="b6bS" x="354" y="145" text-anchor="middle">25.0k</text>
+        <text class="b6bS" x="402" y="162" text-anchor="middle">21.3k</text>
+        <text class="b6bS" x="489" y="176" text-anchor="middle">18.5k</text>
+        <text class="b6bS" x="537" y="185" text-anchor="middle">16.7k</text>
+        <text class="b6bS" x="624" y="205" text-anchor="middle">12.4k</text>
+        <text class="b6bS" x="672" y="211" text-anchor="middle">11.2k</text>
+        <text class="b6bS" x="759" y="217" text-anchor="middle">9.8k</text>
+        <text class="b6bS" x="807" y="220" text-anchor="middle">9.2k</text>
+
+        <text class="b6bL" x="108" y="290" text-anchor="middle">C1</text>
+        <text class="b6bL" x="243" y="290" text-anchor="middle">C5</text>
+        <text class="b6bL" x="378" y="290" text-anchor="middle">C3</text>
+        <text class="b6bL" x="513" y="290" text-anchor="middle">C2</text>
+        <text class="b6bL" x="648" y="290" text-anchor="middle">C6</text>
+        <text class="b6bL" x="783" y="290" text-anchor="middle">C4</text>
+
+        <text class="b6bS" x="108" y="308" text-anchor="middle">1st, stays 1st</text>
+        <text class="b6bR" x="243" y="308" text-anchor="middle">2nd, drops to 3rd</text>
+        <text class="b6bB" x="378" y="308" text-anchor="middle">3rd, rises to 2nd</text>
+        <text class="b6bS" x="513" y="308" text-anchor="middle">4th, stays</text>
+        <text class="b6bS" x="648" y="308" text-anchor="middle">5th, stays</text>
+        <text class="b6bS" x="783" y="308" text-anchor="middle">6th, stays</text>
+
+        <text class="b6bN" x="30" y="344">C5 loses 36 percent of its attributed GMV to cancellations and returns; on settled, C3 passes it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the teal bar is the one the commission ignores: C5 is paid on 31.0k and delivered 19.8k</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The six creators, and the two rankings<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>One quarter, commission 8 percent of attributed GMV. All constructed.</p>
+        <table class="clean">
+          <thead><tr><th>Creator</th><th>Followers</th><th>Attributed GMV</th><th>Settled GMV</th><th>Not settled</th></tr></thead>
+          <tbody>
+            <tr><td><strong>C1</strong></td><td>2,100,000</td><td>$42,000</td><td>$29,400</td><td>30%</td></tr>
+            <tr><td><strong>C2</strong></td><td>180,000</td><td>$18,500</td><td>$16,650</td><td>10%</td></tr>
+            <tr><td><strong>C3</strong></td><td>650,000</td><td>$25,000</td><td>$21,250</td><td>15%</td></tr>
+            <tr><td><strong>C4</strong></td><td>45,000</td><td>$9,800</td><td>$9,212</td><td>6%</td></tr>
+            <tr><td><strong>C5</strong></td><td>1,400,000</td><td>$31,000</td><td>$19,840</td><td>36%</td></tr>
+            <tr><td><strong>C6</strong></td><td>90,000</td><td>$12,400</td><td>$11,160</td><td>10%</td></tr>
+          </tbody>
+        </table>
+        <p>Ranked by attributed: <strong>C1, C5, C3, C2, C6, C4</strong>. Ranked by settled: <strong>C1, C3, C5, C2, C6, C4</strong>. Only one pair swaps, and it is the pair that matters: C5, the second-biggest name on the books, is the one whose buyers send the most back. On attributed, C5 is paid 8 percent of $31,000, which is <strong>$2,480</strong>. On settled it would be <strong>$1,587.20</strong>.</p>
+        <p>For the equation GMV itself is built from, link out to <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a1-the-gmv-equation.html">the GMV equation in the ecommerce metrics course</a>. The enabler twist is that there are two parties' GMV on one order, the platform's credit and the brand's settlement, and they are not the same number.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What a high not-settled share usually means, and what it does not<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A creator whose attributed orders settle at 64 percent, like C5, is worth a conversation, not a verdict. The usual readings: the audience buys on impulse and returns; the creator's claims about the product did not match the product; an attribution window credits the creator with orders they barely touched, which buyers cancel. The data on this table cannot tell those apart. The order-level return reasons, where the platform gives them, sometimes can.</p>
+        <p>Two things the map does not record, so check them for your own programmes before you call anything overpaid: whether a platform claws back commission on a returned order, and how long after the order a return can still land. Both decide when "settled" is final, and a settled figure read too early is just a smaller attributed figure.</p>
+        <p>Serai's own network keeps a share of the commissions it brokers, so a commission paid on attributed flatters Serai's line too. Say that out loud when you propose moving to settled; the room will already be thinking it.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>A listed marketplace counts orders before they settle, and says so.</strong> Sea Limited's annual report on Form 20-F for fiscal 2019 defines Shopee's GMV as including shipping and other charges, and counts an order "regardless of whether the transaction is settled or if the item is returned". That is a legitimate headline definition for a marketplace, written down where a reader can find it. The lesson for an enabler is not that either number is wrong. It is that the platform's number and the brand's number are defined differently on purpose, and a creator ranking must say which one it used. (Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions.)</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers yield denominators</span>
+      <h2>Yield per what</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">"Yield" is a ratio, and the denominator is the question. Divide settled GMV by followers and the list inverts: the smallest creator comes first and the biggest comes last. Neither list is wrong. They answer different questions, and the analyst's job is to say which question each one answers before anyone rebooks anybody.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 346" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn slope chart. Left axis: rank by settled GMV, C1 29,400 dollars, C3 21,250, C5 19,840, C2 16,650, C6 11,160, C4 9,212. Right axis: rank by settled per 1,000 followers, C4 204.7 dollars, C6 124.0, C2 92.5, C3 32.7, C5 14.2, C1 14.0. C4 climbs from sixth to first, highlighted; C1 falls from first to sixth.">
+        <defs>
+          <filter id="b6cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="71" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b6cHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b6cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b6cH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6cL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6cS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b6cB { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #0A4D48; }
+          .b6cR { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #991B1B; }
+          .b6cA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b6cN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b6cH" x="30" y="26">SAME SIX CREATORS, TWO DENOMINATORS, CONSTRUCTED</text>
+        <text class="b6cA" x="260" y="56" text-anchor="middle">rank by settled GMV</text>
+        <text class="b6cA" x="620" y="56" text-anchor="middle">rank by settled per 1,000 followers</text>
+
+        <g filter="url(#b6cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- axes -->
+          <path d="M260 70 L260 290" stroke="#E2CDCB"/>
+          <path d="M620 70 L620 290" stroke="#E2CDCB"/>
+          <!-- slopes: C3 2 to 4, C5 3 to 5, C2 4 to 3, C6 5 to 2 -->
+          <path d="M260 120 L620 200" stroke="#6B5256"/>
+          <path d="M260 160 L620 240" stroke="#6B5256"/>
+          <path d="M260 200 L620 160" stroke="#6B5256"/>
+          <path d="M260 240 L620 120" stroke="#6B5256"/>
+          <!-- C1 1 to 6 -->
+          <path d="M260 80 L620 280" stroke="#BE3745" stroke-width="2.4"/>
+          <!-- C4 6 to 1, the one thing -->
+          <path d="M260 280 L620 80" stroke="#0E6F68" stroke-width="3"/>
+          <!-- endpoints -->
+          <circle cx="260" cy="80" r="5" fill="#FFFFFF"/>
+          <circle cx="260" cy="120" r="5" fill="#FFFFFF"/>
+          <circle cx="260" cy="160" r="5" fill="#FFFFFF"/>
+          <circle cx="260" cy="200" r="5" fill="#FFFFFF"/>
+          <circle cx="260" cy="240" r="5" fill="#FFFFFF"/>
+          <circle cx="260" cy="280" r="5" fill="#0E6F68" stroke="#0E6F68"/>
+          <circle cx="620" cy="80" r="5" fill="#0E6F68" stroke="#0E6F68"/>
+          <circle cx="620" cy="120" r="5" fill="#FFFFFF"/>
+          <circle cx="620" cy="160" r="5" fill="#FFFFFF"/>
+          <circle cx="620" cy="200" r="5" fill="#FFFFFF"/>
+          <circle cx="620" cy="240" r="5" fill="#FFFFFF"/>
+          <circle cx="620" cy="280" r="5" fill="#FFFFFF"/>
+          <!-- doodle: a hand-drawn ring around the new first place -->
+          <ellipse cx="664" cy="80" rx="52" ry="15" transform="rotate(-3 664 80)" stroke="#0E6F68"/>
+        </g>
+
+        <text class="b6cL" x="244" y="84" text-anchor="end">1 · C1 $29,400</text>
+        <text class="b6cL" x="244" y="124" text-anchor="end">2 · C3 $21,250</text>
+        <text class="b6cL" x="244" y="164" text-anchor="end">3 · C5 $19,840</text>
+        <text class="b6cL" x="244" y="204" text-anchor="end">4 · C2 $16,650</text>
+        <text class="b6cL" x="244" y="244" text-anchor="end">5 · C6 $11,160</text>
+        <text class="b6cL" x="244" y="284" text-anchor="end">6 · C4 $9,212</text>
+
+        <text class="b6cB" x="636" y="84">C4 $204.7</text>
+        <text class="b6cL" x="636" y="124">C6 $124.0</text>
+        <text class="b6cL" x="636" y="164">C2 $92.5</text>
+        <text class="b6cL" x="636" y="204">C3 $32.7</text>
+        <text class="b6cL" x="636" y="244">C5 $14.2</text>
+        <text class="b6cR" x="636" y="284">C1 $14.0</text>
+
+        <text class="b6cS" x="30" y="84">reaches most</text>
+        <text class="b6cB" x="728" y="84">converts most</text>
+        <text class="b6cS" x="728" y="100">per follower</text>
+
+        <text class="b6cN" x="30" y="324">Same six creators, same settled GMV. The denominator decides who is first, so name it next to every rank.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - 45,000 followers settled more per head than 2,100,000 did, and both facts are true at once</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Four denominators, four questions<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Yield</th><th>Question it answers</th><th>Who wins here (constructed)</th><th>The trap</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Settled GMV</strong></td><td>Who moves the most money, and who reaches most?</td><td>C1</td><td>Rewards audience size; says nothing about fit</td></tr>
+            <tr><td><strong>Settled per 1,000 followers</strong></td><td>Whose audience buys? Who to rebook, or book more of?</td><td>C4, at $204.7</td><td>Small bases are noisy; one quarter is one draw</td></tr>
+            <tr><td><strong>Settled per asset</strong></td><td>Which content to remake, and which to retire?</td><td>Needs the tag</td><td>An asset placed ten times gets ten times the chances</td></tr>
+            <tr><td><strong>Settled per placement</strong></td><td>Where to put the next asset: listing, stream or link?</td><td>Needs the tag</td><td>Placements differ in traffic; compare within a SKU</td></tr>
+          </tbody>
+        </table>
+        <p>The first two need only the affiliate report plus a settlement feed. The last two need the tag from Part 1, which is the whole argument for building it. The build-along computes both on a tiny constructed archive.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What per-follower yield cannot tell you<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>C4 settled $204.7 per 1,000 followers in one constructed quarter. Whether that holds if Serai books C4 three times as often is not in the data. A small, loyal audience can tire of being sold to, and nothing on this table measures that. Treat the per-follower ranking as the shortlist for a test, not as the answer: book C4 more for one quarter and watch whether settled per 1,000 followers holds.</p>
+        <p>Which content traits actually sell (the hook, the length, the host, the first minute) is a modelling question, and it has its own home: the <a href="https://phoebefu6.github.io/learn-live-commerce-analytics-with-phoebe/">live commerce analytics course</a> builds those models. The tag you build tonight is what makes its methods possible on an enabler's own archive.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Constructed: the rebooking meeting that ran two lists.</strong> Serai's creator team (constructed) came to a planning meeting with one list, ranked by attributed GMV, and proposed renewing C5 at a higher rate. The analyst brought two more: settled, where C5 slipped to third, and settled per 1,000 followers, where C5 was fifth and C4 first. The meeting kept C1 for reach, moved C5 to a settled-GMV trial, and booked C4 for a test quarter. Three lists, three decisions, and nobody argued about which list was "right", because each one said its denominator in the header.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Rank six creators three ways</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Six rows of constructed creator data, then a tiny constructed archive of four assets and eight orders. Build the creator table, compute settled and the not-settled share, rank three ways, price the commission both ways, then sketch the asset-tag join. Every output below is what the code printed on pandas 2.1, run top to bottom as one script; the data is constructed, so on your own estate your numbers will differ.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 342" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline in two rows. Top row, at creator grain: the creator table, six rows, constructed; settled and not-settled share, attributed minus returns; three rankings, by attributed, settled and per 1,000 followers; the commission check, 8 percent paid on attributed. Bottom row, at asset grain: an assets table and an orders table with asset_id both feed a merge on asset_id with validate many_to_one, which gives settled GMV per asset and per placement, highlighted. A red dashed panel under the merge notes one untagged order of eight that joins to nothing.">
+        <defs>
+          <filter id="b6dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="79" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b6dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b6dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b6dH { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6dL { font: 600 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #2B1518; }
+          .b6dS { font: 400 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+          .b6dA { font: 700 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #BE3745; }
+          .b6dW { font: 800 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #FFFFFF; }
+          .b6dR { font: 800 11px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #991B1B; }
+          .b6dN { font: 400 12px Inter, -apple-system, "Segoe UI", Arial, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b6dH" x="30" y="26">TWO GRAINS, ONE SCRIPT</text>
+        <text class="b6dA" x="210" y="26">steps 1 to 3: creator grain, what the platform reports</text>
+
+        <g filter="url(#b6dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- top row -->
+          <rect x="30" y="44" width="190" height="56" rx="10" transform="rotate(-0.6 125 72)" fill="#FDF1EF"/>
+          <rect x="250" y="44" width="190" height="56" rx="10" transform="rotate(0.5 345 72)" fill="#FFFFFF"/>
+          <rect x="470" y="44" width="190" height="56" rx="10" transform="rotate(-0.4 565 72)" fill="#FFFFFF"/>
+          <rect x="690" y="44" width="160" height="56" rx="10" transform="rotate(0.6 770 72)" fill="#FFFFFF"/>
+          <path d="M224 72 L244 72" marker-end="url(#b6dAr)"/>
+          <path d="M444 72 L464 72" marker-end="url(#b6dAr)"/>
+          <path d="M664 72 L684 72" marker-end="url(#b6dAr)"/>
+          <!-- bottom row -->
+          <rect x="30" y="150" width="200" height="50" rx="8" transform="rotate(0.8 130 175)" fill="#FFFFFF"/>
+          <rect x="30" y="220" width="200" height="50" rx="8" transform="rotate(-0.8 130 245)" fill="url(#b6dHc)"/>
+          <rect x="320" y="180" width="220" height="56" rx="10" transform="rotate(0.4 430 208)" fill="#FDF1EF"/>
+          <rect x="640" y="180" width="210" height="56" rx="10" transform="rotate(-0.5 745 208)" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M234 175 L314 200" marker-end="url(#b6dAr)"/>
+          <path d="M234 245 L314 218" marker-end="url(#b6dAr)"/>
+          <path d="M546 208 L632 208" marker-end="url(#b6dAr)"/>
+          <rect x="320" y="258" width="220" height="34" rx="8" stroke="#991B1B" stroke-dasharray="6 5" fill="#FEF2F2"/>
+          <!-- doodle: a key on the merge -->
+          <circle cx="516" cy="170" r="6" fill="#FFFFFF"/>
+          <path d="M522 170 L538 170 M532 170 L532 176 M536 170 L536 175"/>
+        </g>
+
+        <text class="b6dL" x="46" y="68">Creator table</text>
+        <text class="b6dS" x="46" y="86">6 rows, constructed</text>
+        <text class="b6dL" x="266" y="68">Settled, not-settled %</text>
+        <text class="b6dS" x="266" y="86">attributed minus returns</text>
+        <text class="b6dL" x="486" y="68">Three rankings</text>
+        <text class="b6dS" x="486" y="86">by attributed, settled, 1k</text>
+        <text class="b6dL" x="706" y="68">Commission check</text>
+        <text class="b6dS" x="706" y="86">8% paid on attributed</text>
+
+        <text class="b6dA" x="30" y="136">steps 4 and 5: asset grain, what the tag lets Serai build</text>
+
+        <text class="b6dL" x="46" y="172">assets</text>
+        <text class="b6dS" x="46" y="189">asset_id, creator, sku</text>
+        <text class="b6dL" x="46" y="242">orders</text>
+        <text class="b6dS" x="46" y="259">asset_id rode in</text>
+        <text class="b6dL" x="336" y="204">merge on asset_id</text>
+        <text class="b6dS" x="336" y="222">validate many_to_one</text>
+        <text class="b6dW" x="656" y="204">settled per asset</text>
+        <text class="b6dW" x="656" y="222">and per placement</text>
+        <text class="b6dR" x="336" y="280">untagged: 1 of 8 orders</text>
+
+        <text class="b6dN" x="30" y="324">The top row reads totals a platform reports. The bottom row builds the grain it does not report.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - validate="many_to_one" is the line that stops a duplicated asset id from doubling GMV silently</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Build the six-row creator table, and compute settled from what did not settle.</strong> Keep the cancelled and returned value as its own column: settled is a subtraction you can audit, not a number someone typed. The figures are the constructed creator table, one quarter.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · six creators, constructed</span>import pandas as pd
+
+cols = ["creator", "followers", "attributed", "cancelled_returned"]
+rows = [                                   # one quarter, constructed
+    ("C1", 2_100_000, 42_000, 12_600),
+    ("C2",   180_000, 18_500,  1_850),
+    ("C3",   650_000, 25_000,  3_750),
+    ("C4",    45_000,  9_800,    588),
+    ("C5", 1_400_000, 31_000, 11_160),
+    ("C6",    90_000, 12_400,  1_240),
+]
+cr = pd.DataFrame(rows, columns=cols)
+cr["settled"] = cr["attributed"] - cr["cancelled_returned"]
+cr["not_settled_pct"] = (cr["cancelled_returned"] / cr["attributed"] * 100).round(1)
+print(cr[["creator", "attributed", "settled", "not_settled_pct"]].to_string(index=False))
+print("total", cr["attributed"].sum(), cr["settled"].sum())
+# creator  attributed  settled  not_settled_pct
+#      C1       42000    29400             30.0
+#      C2       18500    16650             10.0
+#      C3       25000    21250             15.0
+#      C4        9800     9212              6.0
+#      C5       31000    19840             36.0
+#      C6       12400    11160             10.0
+# total 138700 107512</div>
+      </div>
+      <div class="step">
+        <p><strong>Rank three ways from one function.</strong> One helper sorts by any column, so the three lists cannot drift apart in how they break ties or which way they sort. Print the per-follower table too: the ranking is the headline, the values are the evidence.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · three rankings</span>cr["per_1k"] = (cr["settled"] / (cr["followers"] / 1_000)).round(1)
+
+def rank(col):
+    return " ".join(cr.sort_values(col, ascending=False)["creator"])
+
+print("by attributed:     ", rank("attributed"))
+print("by settled:        ", rank("settled"))
+print("by settled per 1k: ", rank("per_1k"))
+print(cr.sort_values("per_1k", ascending=False)
+        [["creator", "followers", "settled", "per_1k"]].to_string(index=False))
+# by attributed:      C1 C5 C3 C2 C6 C4
+# by settled:         C1 C3 C5 C2 C6 C4
+# by settled per 1k:  C4 C6 C2 C3 C5 C1
+# creator  followers  settled  per_1k
+#      C4      45000     9212   204.7
+#      C6      90000    11160   124.0
+#      C2     180000    16650    92.5
+#      C3     650000    21250    32.7
+#      C5    1400000    19840    14.2
+#      C1    2100000    29400    14.0</div>
+      </div>
+      <div class="step">
+        <p><strong>Price the commission both ways.</strong> The constructed contract pays 8 percent of attributed GMV. Put the settled alternative next to it, per creator, and print the difference. It is the number that starts the renegotiation, so it has to be one anyone can re-run.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · commission on attributed versus settled</span>RATE = 0.08                                # paid on ATTRIBUTED GMV
+cr["paid"] = cr["attributed"] * RATE
+cr["if_settled"] = cr["settled"] * RATE
+cr["overpaid"] = cr["paid"] - cr["if_settled"]
+print(cr[["creator", "paid", "if_settled", "overpaid"]].round(2).to_string(index=False))
+print("total overpaid:", round(cr["overpaid"].sum(), 2))
+# creator   paid  if_settled  overpaid
+#      C1 3360.0     2352.00   1008.00
+#      C2 1480.0     1332.00    148.00
+#      C3 2000.0     1700.00    300.00
+#      C4  784.0      736.96     47.04
+#      C5 2480.0     1587.20    892.80
+#      C6  992.0      892.80     99.20
+# total overpaid: 2495.04</div>
+      </div>
+      <div class="step">
+        <p><strong>Sketch the tagged archive and join the orders back.</strong> A constructed archive of four assets and eight orders. Each order carries the asset id that rode in on its placement, and one does not. The <code>validate="many_to_one"</code> argument makes pandas fail loudly if an asset id appears twice in the archive, instead of quietly doubling every order that joins to it.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · the asset-tag join</span>assets = pd.DataFrame({                    # the tagged archive, constructed
+    "asset_id": ["A-101", "A-102", "A-103", "A-104"],
+    "creator":  ["C4",    "C4",    "C5",    "C5"],
+    "sku":      ["SK-7",  "SK-7",  "SK-2",  "SK-2"],
+})
+orders = pd.DataFrame({                    # asset_id rode in on the placement
+    "order_id":  ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8"],
+    "asset_id":  ["A-101", "A-101", "A-102", "A-103", "A-103", "A-103", "A-104", None],
+    "placement": ["listing", "stream", "link", "link", "link", "stream", "listing", "listing"],
+    "gmv":       [40, 40, 25, 60, 60, 60, 30, 55],
+    "status":    ["settled", "settled", "settled", "returned", "settled",
+                  "cancelled", "settled", "settled"],
+})
+orders["settled_gmv"] = orders["gmv"].where(orders["status"] == "settled", 0)
+joined = orders.merge(assets, on="asset_id", how="left", validate="many_to_one")
+print("untagged orders:", joined["creator"].isna().sum(), "of", len(joined))
+# untagged orders: 1 of 8</div>
+      </div>
+      <div class="step">
+        <p><strong>Read yield per asset and per placement, and report the untagged share with it.</strong> A-103 was credited 180 and settled 60: the per-asset view finds the same problem the creator view found for C5, one level down, where it can be fixed by changing the content. The untagged order stays out of the asset view and in the report as a coverage line.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · settled per asset, per placement, per creator</span>tagged = joined.dropna(subset=["creator"])
+per_asset = (tagged.groupby(["asset_id", "creator", "sku"], as_index=False)
+                   [["gmv", "settled_gmv"]].sum())
+print(per_asset.to_string(index=False))
+print(tagged.groupby("placement")["settled_gmv"].sum().to_dict())
+print(tagged.groupby("creator")["settled_gmv"].sum().to_dict())
+# asset_id creator  sku  gmv  settled_gmv
+#    A-101      C4 SK-7   80           80
+#    A-102      C4 SK-7   25           25
+#    A-103      C5 SK-2  180           60
+#    A-104      C5 SK-2   30           30
+# {'link': 85, 'listing': 70, 'stream': 40}
+# {'C4': 105, 'C5': 90}</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Report the tag coverage on every yield table.</strong> "Settled per asset, 7 of 8 orders tagged" is a number a brand can trust; the same table without the coverage line quietly assumes the untagged orders look like the tagged ones. Session 7 puts both the yield definition and its coverage rule into the metric registry.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 7</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Pull one quarter of your own creator or affiliate report and add a settled column from your settlement feed. Rank both ways and write down every creator who moves by more than one place.</li>
+      <li>Find out, for each programme you run, whether commission is paid on attributed or settled GMV and when a return stops counting. Write both on one line per programme, with the date you checked.</li>
+      <li>Pick 20 assets from last month and trace each one: does any order carry something that points back to it? Count how many you could join today, and name the carrier for each placement.</li>
+      <li>Write the header for each of the four yield tables (settled, per 1,000 followers, per asset, per placement) as one sentence: the question it answers and the decision it feeds.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 6 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Why does an enabler need its own asset id on every piece of content?</p>
+      <button class="qopt" type="button">A · Because the platforms require one before content can be listed</button>
+      <button class="qopt" type="button">B · Because it makes the files easier to find in the studio drive</button>
+      <button class="qopt" type="button">C · Because the platforms return a total per creator, not per asset, so the id carried into the listing, stream or link is the only thing a later order can join back on</button>
+      <button class="qopt" type="button">D · Because it replaces the need for a settlement feed</button>
+      <p class="qwhy">The archive is owned and the creator results are partial. The tag makes Serai's side rich enough that a thin order row joins to the asset that sold it, and an order placed against an untagged asset can never be credited later.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · C5 is second on attributed GMV and third on settled. What explains the move?</p>
+      <button class="qopt" type="button">A · 36 percent of C5's attributed GMV was cancelled or returned, the highest share of the six, so C3 passes it once only settled money counts</button>
+      <button class="qopt" type="button">B · C5 has fewer followers than C3</button>
+      <button class="qopt" type="button">C · Settled GMV excludes shipping and attributed GMV includes it</button>
+      <button class="qopt" type="button">D · The commission rate is higher for C5</button>
+      <p class="qwhy">$31,000 attributed became $19,840 settled; C3's $25,000 became $21,250. Same rate for everyone, different return behaviour. On attributed, C5 is paid $2,480; on settled it would be $1,587.20.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">3 · On settled GMV per 1,000 followers, C4 is first and C1 last. What should the planning meeting do with that list?</p>
+      <button class="qopt" type="button">A · Drop C1, since the per-follower list is the fair one</button>
+      <button class="qopt" type="button">B · Ignore it, since C1 still settles the most money</button>
+      <button class="qopt" type="button">C · Average the two ranks and book the top three</button>
+      <button class="qopt" type="button">D · Read it as the answer to "whose audience buys": shortlist C4 for a test quarter, keep C1 for reach, and label each list with its denominator</button>
+      <p class="qwhy">Each denominator answers its own question. Settled GMV says who reaches most; per 1,000 followers says whose audience converts. One constructed quarter is one draw, so the per-follower list earns a test, not a verdict.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The tag chain: content to tagged archive to yield</span><span class="note">The track's own chain, drawn in analyst session 1; the carriers per placement and the skincare brand story are constructed</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Attributed versus settled GMV</span><span class="note">Practice, on a constructed six-creator table; the platform-side definition anchored on Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Yield denominators</span><span class="note">Practice: settled, per 1,000 followers, per asset, per placement; every figure constructed and re-run in pandas</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Which content traits sell</span><span class="note">Modelled in the live commerce analytics course, linked rather than re-taught</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 6 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Tag at export</b><span>One persistent id per asset, minted once; a re-cut is a new asset with a parent id.</span></div>
+      <div class="cheat-item"><b>Ride a carrier</b><span>Listing version map, stream run sheet per minute, link sub-id. No carrier, no join.</span></div>
+      <div class="cheat-item"><b>Settled, not attributed</b><span>Attributed is the platform's credit; settled is what reached the brand. Rank on settled.</span></div>
+      <div class="cheat-item"><b>Price the commission</b><span>Paid on attributed, C5 costs $2,480; on settled, $1,587.20. Print both.</span></div>
+      <div class="cheat-item"><b>Name the denominator</b><span>Settled for reach, per 1,000 followers for fit, per asset for content, per placement for where.</span></div>
+      <div class="cheat-item"><b>Report coverage</b><span>Every yield table says how many orders were tagged. validate="many_to_one" on the join.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>Tonight you wrote "settled GMV per asset" three different ways before settling on one. Session 7 stops that from happening across a whole company: a YAML metric registry with one definition per metric, its lineage and a version, and tests that fail the day someone changes what GMV, take rate or yield means without saying so.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 6 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b5-stop-hold-love-buy.html">← Prev: Stop, Hold, Love, Buy as code</a> &nbsp;·&nbsp; <a href="b7-registry-as-code.html">Next: The metric registry as code →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

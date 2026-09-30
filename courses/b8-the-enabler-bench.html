@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 8 of 8. The enabler bench: 8,614 real Olist orders split into three masked marketplace exports. Pick join keys and a grain and the bench scores every link against the hidden real ids; then sequence ten use cases from one editable assumptions block, gated by what the identity ladder could join.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The enabler bench - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 8 of 8. Customer grain stops at 23.3 percent; Serai's own store id holds at 100. Then pricing optimisation first adds 7.3 million of GMV and pays Serai back two quarters later.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b8-the-enabler-bench.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The enabler bench - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 8 of 8. The identity ladder and the roadmap sequencer, computed in your browser on real orders.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 8 · The enabler bench - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 8 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 8 of 8</div>
+    <h1>The <span class="accent">enabler bench</span></h1>
+    <p class="sub">Two panels, both computed in your browser. The first takes 8,614 real orders from the public Olist dataset, splits them into three marketplace-style exports and masks each one the way the marketplaces are reported to, then scores whatever join keys you pick against the real customer, store and SKU ids it has hidden. The second sequences ten use cases for Serai Commerce from one assumptions block you can edit, and a use case that needs a grain the first panel could not join is built and earns nothing. Every number on this page is one the bench prints.</p>
+    <div class="chip-row">
+      <span class="chip level">🔴 Capstone</span>
+      <span class="chip audience">Analysts and data leads</span>
+      <span class="chip audience">Anyone sequencing an enabler roadmap</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:3">3-14 · What the bench measures</span>
+      <span class="a3" style="flex:6">14-40 · Build-along: both panels</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we end up</h2>
+    </div>
+    <p class="lede">Sessions 2 and 3 built the exports and the identity gate by hand; sessions 5 to 7 put numbers on the work an enabler does. This page runs both halves of the argument on one screen. The orders are real: which customer placed each one, the zip and city on it, the store and SKU on every line. What is constructed is said on the widget: the three-way split, the synthetic names and phones behind each real customer (Olist publishes neither), each export's masking, the few listings missing from Serai's SKU table, and every figure in the roadmap's assumptions block.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">measured = counted from real rows</span>
+      <span class="pill">modelled = computed from stated assumptions</span>
+      <span class="pill">★ Build-along = run the bench yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A measured answer to the question every enabler strategy skips: at which grain can you actually join the marketplaces? On real orders, the customer stops at a 23.3 percent true match rate and Serai's own store id holds at 100. And a sequenced roadmap whose payback you can defend, including the one input that would make the pricing-first roadmap right.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers what the bench computes and how it can fail</span>
+      <h2>A match rate that can report zero</h2>
+      <span class="tag concept">5 min live</span>
+    </div>
+    <p class="lede">A match rate is only worth reading if a wrong key can drive it down. The bench counts pairs: two rows that truly belong to the same customer (or store, or SKU) are a true pair; two rows your key puts together are a predicted pair. The score punishes both failures at once.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline. Real Olist orders on the left split into three exports: Platform A with 3,935 orders keeps zip and city, Platform B with 2,912 keeps neither, Platform C with 1,767 exposes phone and address only on 265 seller-shipped orders. The chosen keys group rows into predicted pairs. On the right two overlapping circles: predicted pairs and true pairs from the hidden real ids. The overlap is the correct pairs, and the true match rate is the overlap over the union.">
+        <defs>
+          <filter id="b8aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="61" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b8aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b8aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b8aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b8aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b8aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b8aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b8aV { font: 800 16px Inter, sans-serif; fill: #8A2330; }
+          .b8aW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b8aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b8aH" x="30" y="26">FROM REAL ORDERS TO ONE SCORE</text>
+        <text class="b8aS" x="270" y="26">the split and masking are constructed · the orders and who placed them are real</text>
+
+        <g filter="url(#b8aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="100" width="130" height="110" rx="6" transform="rotate(-1 95 155)" fill="url(#b8aHc)"/>
+          <path d="M166 130 L220 70" marker-end="url(#b8aAr)"/>
+          <path d="M166 156 L220 156" marker-end="url(#b8aAr)"/>
+          <path d="M166 182 L220 240" marker-end="url(#b8aAr)"/>
+          <rect x="228" y="44" width="190" height="54" rx="8" transform="rotate(-0.6 323 71)" fill="#FFFFFF"/>
+          <rect x="228" y="130" width="190" height="54" rx="8" transform="rotate(0.5 323 157)" fill="#FFFFFF"/>
+          <rect x="228" y="216" width="190" height="54" rx="8" transform="rotate(-0.4 323 243)" fill="#FFFFFF"/>
+          <path d="M424 70 L476 150" marker-end="url(#b8aAr)"/>
+          <path d="M424 157 L476 157" marker-end="url(#b8aAr)"/>
+          <path d="M424 243 L476 164" marker-end="url(#b8aAr)"/>
+          <rect x="484" y="128" width="100" height="58" rx="10" transform="rotate(0.8 534 157)" fill="#FDF1EF"/>
+          <path d="M590 157 L620 157" marker-end="url(#b8aAr)"/>
+          <circle cx="690" cy="157" r="62" fill="#FDF1EF"/>
+          <circle cx="770" cy="157" r="62" fill="#E2F3F0" stroke="#0E6F68"/>
+          <path d="M730 108 C748 130 748 184 730 206 C712 184 712 130 730 108 Z" fill="#0E6F68" stroke="#0E6F68"/>
+        </g>
+
+        <text class="b8aL" x="44" y="142">8,614 real</text>
+        <text class="b8aL" x="44" y="160">orders</text>
+        <text class="b8aS" x="44" y="178">8,333 customers</text>
+        <text class="b8aS" x="44" y="194">3.0% repeat</text>
+
+        <text class="b8aL" x="240" y="66">A · 3,935 orders</text>
+        <text class="b8aS" x="240" y="84">keeps zip and city</text>
+        <text class="b8aL" x="240" y="152">B · 2,912 orders</text>
+        <text class="b8aS" x="240" y="170">keeps neither</text>
+        <text class="b8aL" x="240" y="238">C · 1,767 orders</text>
+        <text class="b8aS" x="240" y="256">phone, address if seller-shipped</text>
+
+        <text class="b8aL" x="496" y="152">your keys</text>
+        <text class="b8aS" x="496" y="170">group rows</text>
+
+        <text class="b8aS" x="640" y="232">predicted</text>
+        <text class="b8aS" x="784" y="232">true pairs</text>
+        <text class="b8aB" x="690" y="84">correct = overlap</text>
+        <text class="b8aW" x="717" y="162">TP</text>
+
+        <text class="b8aV" x="30" y="296">rate = TP / (P + T - TP)</text>
+        <text class="b8aN" x="250" y="296">Miss real links and T grows past TP. Invent false ones and P does. Either way the rate falls.</text>
+        <text class="b8aS" x="30" y="318">Masking modelled on public reports: name as first letter, ***, last letter, and the last two phone digits, on every export.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the overlap over the union, so a key that links everything scores as badly as a key that links nothing</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why pairs, and why the union<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A match is a claim that two rows are the same thing. So the unit of scoring is the pair: every two rows your key groups together is a claim, every two rows that share a hidden real id is the truth. Three counts come out: predicted pairs P, true pairs T, and correct pairs TP, the claims that were true.</p>
+        <p>Recall (TP / T) alone rewards a key that joins everything: masked name finds all 339 real customer pairs in the sample, and also claims 2,370,747 false ones. Precision (TP / P) alone rewards a key that joins almost nothing. <strong>TP / (P + T - TP)</strong> is the share of correct pairs among all pairs that are either true or claimed, the Jaccard index of the two sets. It is high only when a key finds the real links and invents almost none.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The break button, and why every bench needs one<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Press "Break it" and the bench shuffles the hidden ids across rows, with a fixed seed. The keys are untouched; only the truth is scrambled. If the score measured matching, every grain must collapse, and it does: the best any combination reaches falls to 0.0 percent at customer grain, 0.4 percent at store grain and 0.0 percent at SKU grain. If a grain had held up under the shuffle, the bench would have been measuring the shape of the data, not the join.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What the sample does and does not represent<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The sample keeps Olist's real repeat rate: 250 of the 2,801 customers who bought more than once, and 8,083 one-time buyers, the real ratio of 2,801 to 90,557. That ratio matters, because false pairs are made by strangers who collide on a key, and a sample stuffed with repeat buyers would flatter every weak key.</p>
+        <p>One honest limit points the other way. False pairs grow with the square of the number of rows and true pairs grow roughly with the count, so at 8,614 orders the fragment keys look better than they would on an enabler's full order history. Treat the customer-grain results as a ceiling.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section" id="bench">
+    <div class="section-kicker">
+      <span class="klabel">Build-along · the bench</span>
+      <h2>Both panels, computed in front of you</h2>
+      <span class="tag demo">★ 26 min · the main event</span>
+    </div>
+    <p class="lede">Work panel 1 top to bottom with the rungs below, then panel 2. Say out loud what changed before you move to the next rung. The bench recomputes every number from the rows each time you click.</p>
+
+    <div id="en-bench"></div>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Rung 1, customer grain, masked name only.</strong> This is the default. It finds every real link (100.0 percent) and claims 2,370,747 false ones against 339 right ones. True match rate 0.0 percent. Sixty-three distinct masked names cover 8,333 people.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 2, add masked phone.</strong> Name plus the last two digits: still 100.0 percent of real links found, false links down to 23,589, rate 1.4 percent. Two fragments multiply their buckets and still collide constantly.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 3, add city + zip.</strong> Now the key is never wrong: zero false links. It is also silent on every Platform B order and most of Platform C, so it finds 19.2 percent of real links. Rate 19.2 percent. Precision bought with recall, exactly.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 4, swap city + zip for store id, and look at the best gauge.</strong> Masked name, masked phone and store id is the best of all 127 combinations at customer grain: 23.3 percent, finding 29.2 percent of real links with 86 false ones. The gauge says gate shut. Tick hashed phone on its own: 0.0 percent, because the 265 orders that carried a raw phone never include two from the same person. A hash needs the raw value.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 5, switch the grain to Store, then SKU, with store id or SKU ticked.</strong> Store id at store grain: 100.0 percent. SKU at SKU grain: 97.5 percent, 17,033 of 17,474 real pairs, zero false. The missing 2.5 percent is 219 lines on listings absent from Serai's SKU table. Both keys are Serai's own, which is why they hold.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 6, press Break it.</strong> Every gauge falls: customer 0.0, store 0.4, SKU 0.0 percent. Leave it on and look at panel 2: nine of the ten use cases are now blocked and the hours-first order ends at -$510,867. Only customer service reply drafts, which needs no join, survives. Restore the ids before the next step.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 7, panel 2, the four orders.</strong> Hours removed first: $1,372,287 net to Serai after eight quarters, payback in quarter 4. Brand intelligence first: $1,415,738, quarter 3. Single customer view first: $613,747, quarter 6, because its 16 build weeks buy a use case the gate blocks. Pricing optimisation first: $860,315, quarter 6, with $7,310,769 of GMV added for the brands.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rung 8, find the crossover.</strong> Open the assumptions block. Set Serai's GMV-linked fee to 0.06 and pricing optimisation's GMV uplift to 0.06, then compare the orders: pricing first now prints $1,900,438 against $1,612,656 for hours first. The anti-lever is an anti-lever for a business paid mostly in fees. Reset to defaults when you are done.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers what the identity ladder finds</span>
+      <h2>The customer collapses, the store holds</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">Four results worth taking into a meeting, all measured. Each one is a fact about real orders under a constructed but realistic masking, and each one can be reproduced by anyone with the dataset and the Python reference.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hand-drawn bars of true match rate, measured on the bench. Customer grain: masked name 0.0 percent, masked name and phone 1.4, name, phone and city plus zip 19.2, best of 127 combinations 23.3. Store grain with store id: 100 percent. SKU grain with SKU: 97.5 percent. A dashed line marks the 90 percent gate.">
+        <defs>
+          <filter id="b8bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="67" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b8bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b8bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b8bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b8bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b8bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b8bV { font: 800 12px Inter, sans-serif; fill: #8A2330; }
+          .b8bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b8bH" x="30" y="26">TRUE MATCH RATE, BY KEY AND GRAIN</text>
+        <text class="b8bS" x="300" y="26">measured on the bench · bar length = rate · dashed line = the 90% gate</text>
+
+        <g filter="url(#b8bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M260 44 L260 290"/>
+          <!-- 100% = 480px -->
+          <rect x="260" y="52" width="3" height="28" fill="#FDF1EF"/>
+          <rect x="260" y="92" width="7" height="28" fill="#FDF1EF"/>
+          <rect x="260" y="132" width="92" height="28" fill="url(#b8bHc)"/>
+          <rect x="260" y="172" width="112" height="28" fill="url(#b8bHc)"/>
+          <rect x="260" y="212" width="480" height="28" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="260" y="252" width="468" height="28" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M692 44 L692 292" stroke="#991B1B" stroke-dasharray="6 5"/>
+        </g>
+
+        <text class="b8bL" x="240" y="71" text-anchor="end">customer · masked name</text>
+        <text class="b8bL" x="240" y="111" text-anchor="end">customer · name + phone</text>
+        <text class="b8bL" x="240" y="151" text-anchor="end">customer · + city and zip</text>
+        <text class="b8bL" x="240" y="191" text-anchor="end">customer · best of 127</text>
+        <text class="b8bL" x="240" y="231" text-anchor="end">store · store id</text>
+        <text class="b8bL" x="240" y="271" text-anchor="end">SKU · SKU</text>
+
+        <text class="b8bV" x="274" y="71">0.0%</text>
+        <text class="b8bS" x="316" y="71">100% of links found, 2,370,747 false</text>
+        <text class="b8bV" x="278" y="111">1.4%</text>
+        <text class="b8bS" x="320" y="111">100% found, 23,589 false</text>
+        <text class="b8bV" x="362" y="151">19.2%</text>
+        <text class="b8bS" x="412" y="151">never wrong, silent on B</text>
+        <text class="b8bV" x="382" y="191">23.3%</text>
+        <text class="b8bS" x="432" y="191">name + phone + store id</text>
+        <text class="b8bB" x="704" y="306">gate 90%</text>
+        <text class="b8bN" x="30" y="318">The two bars that clear the gate use keys Serai owns. None of the four customer bars gets near it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the gap between the fourth bar and the fifth is the whole of leader session 4, measured</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Four results, and what each one licenses you to say<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ol>
+          <li><strong>No key combination gets the customer past 23.3 percent.</strong> Masked fragments either collide (masked phone finds every real link and 370,684 false ones) or go silent (name, phone and zip is never wrong and finds 19.2 percent). You can say: "on realistic masking, a cross-platform customer join is a guess, not a key."</li>
+          <li><strong>The hashed phone links nothing.</strong> 265 orders carried a raw phone and no two were the same person. You can say: "hashing is not a workaround for masking; it needs the value that was masked."</li>
+          <li><strong>Serai's own keys hold.</strong> Store id 100.0 percent, SKU 97.5 percent. You can say: "the cross-platform view is real at store and SKU grain, today, on our own portfolio."</li>
+          <li><strong>Owning a key means maintaining it.</strong> The 2.5 percent SKU gap is 219 lines on listings missing from the mapping table. You can say: "the mapping table is an owned asset with an owner and a weekly check", which is analyst session 2's job.</li>
+        </ol>
+        <p>For record linkage done properly, with field weights and blocking on millions of rows, see the <a href="https://phoebefu6.github.io/learn-entity-resolution-with-phoebe/courses/03-fellegi-sunter.html">entity resolution course</a>. The bench asks a narrower question: does a key exist at all.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why order id links nothing, and why that is a test<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Order id is unique per order, so at customer grain it claims no pairs and scores 0.0 percent, which is correct: two orders never share one. At store and SKU grain it links the lines inside one order, a handful of true pairs, and scores 0.9 and 7.7 percent. A key that should score near zero and does is the cheapest sanity check a bench has, the same idea as the break button in miniature.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers what the sequencer finds</span>
+      <h2>Big for the brand, slow for Serai</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">The sequencer is modelled, not measured: every figure comes from the assumptions block and every one is constructed. What it does honestly is carry the logic of leader session 2 through the arithmetic, including the gate from panel 1, so an argument about order becomes an argument about inputs you can see.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two hand-drawn running totals of Serai's net margin over eight quarters, modelled from the default assumptions. Hours removed first dips to minus 96,120 dollars in quarter 1 and crosses zero in quarter 4, ending at 1,372,287 dollars. Pricing optimisation first dips to minus 266,218 in quarter 3, crosses zero in quarter 6 and ends at 860,315 dollars, while adding 7,310,769 dollars of GMV for the brands.">
+        <defs>
+          <filter id="b8cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="71" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+        </defs>
+        <style>
+          .b8cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b8cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b8cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b8cB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b8cR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b8cA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b8cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b8cH" x="30" y="26">SERAI'S RUNNING TOTAL, TWO ORDERS</text>
+        <text class="b8cS" x="290" y="26">modelled from the default assumptions block · y = 0 is the dashed line</text>
+
+        <!-- x: Q1..Q8 at 110 + 90*(q-1); y: 0 at 240, 1,400,000 at 60 (0.0001286 px per $) -->
+        <g filter="url(#b8cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M90 240 L760 240" stroke="#6B5256" stroke-dasharray="6 5"/>
+          <path d="M90 60 L90 290"/>
+          <path d="M110 252 L200 251 L290 242 L380 222 L470 191 L560 151 L650 110 L740 64" stroke="#0E6F68" stroke-width="3"/>
+          <path d="M110 255 L200 269 L290 274 L380 266 L470 244 L560 215 L650 176 L740 129" stroke="#991B1B" stroke-width="3"/>
+          <circle cx="380" cy="222" r="5" fill="#0E6F68" stroke="#0E6F68"/>
+          <circle cx="560" cy="215" r="5" fill="#991B1B" stroke="#991B1B"/>
+        </g>
+
+        <text class="b8cS" x="110" y="306" text-anchor="middle">Q1</text>
+        <text class="b8cS" x="290" y="306" text-anchor="middle">Q3</text>
+        <text class="b8cS" x="470" y="306" text-anchor="middle">Q5</text>
+        <text class="b8cS" x="650" y="306" text-anchor="middle">Q7</text>
+        <text class="b8cS" x="740" y="306" text-anchor="middle">Q8</text>
+        <text class="b8cS" x="84" y="244" text-anchor="end">$0</text>
+        <text class="b8cS" x="84" y="66" text-anchor="end">$1.4M</text>
+
+        <text class="b8cB" x="752" y="60">hours first</text>
+        <text class="b8cB" x="752" y="76">$1,372,287</text>
+        <text class="b8cR" x="752" y="126">pricing first</text>
+        <text class="b8cR" x="752" y="142">$860,315</text>
+        <text class="b8cA" x="330" y="206">pays back Q4</text>
+        <text class="b8cA" x="570" y="260">pays back Q6</text>
+        <text class="b8cS" x="200" y="290">pricing first adds $7,310,769 of GMV, 3.9x hours first, and most of it is the brands' money</text>
+
+        <text class="b8cN" x="30" y="330">Same ten use cases, same squad, same eight quarters. Only the order differs.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the red line is the roadmap that wins the GMV slide and loses the margin one</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Three findings, and the one the bench refuses to rank<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Pricing first returns $511,972 less to Serai</strong> and pays back two quarters later, while adding 3.9 times the GMV. Per live week it is worth $992.62 to Serai and $69,230.77 in GMV to the brands; Serai sees 2 percent of that GMV. It pays the brand.</li>
+          <li><strong>The single customer view first costs 16 build weeks and returns nothing</strong>, because its grain did not clear the gate. The order ends at $613,747, the lowest of the four.</li>
+          <li><strong>Break the identity ladder and nine of ten use cases stop.</strong> Hours first falls to -$510,867. An enabler roadmap rests on its joins more than on its models.</li>
+          <li><strong>Hours first and brand intelligence first are within 3.2 percent</strong> ($1,372,287 against $1,415,738). The gap is made of attach revenue the assumptions block stipulates, so the bench does not rank one above the other. The case for hours first is certainty: it needs nobody's permission and no buyer, which leader session 5 builds on.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>When pricing first is the right answer<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The anti-lever carries its own limit, and the bench shows it. Raise Serai's GMV-linked fee to 6 percent and the pricing uplift to 6 percent, and pricing first overtakes hours first, $1,900,438 against $1,612,656. At a 10 percent share it wins from a 4 percent uplift. An enabler paid mostly as a share of GMV is a different business, and for that business the order flips.</p>
+        <p>This is the <a href="https://phoebefu6.github.io/learn-ship-playbook-with-phoebe/courses/05-the-revenue-model-decides.html">playbook's sequencing rule</a> made visible in a single input, and it carries the playbook's status: a working heuristic, uncited, which the bench demonstrates on invented numbers and does not prove about any real company.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>After the track</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Run the same pair scoring on your own three exports: count true pairs by the id you trust and score your best customer key. Write the number next to the single customer view on your roadmap.</li>
+      <li>Replace the assumptions block with your own team sizes and fee split, one line at a time, and write down which input moved the order the most.</li>
+      <li>Find your crossover: the GMV-linked fee share at which pricing first would win for your business. If it is below your real share, your roadmap should start somewhere else.</li>
+      <li>Take the leader track's one-page roadmap and put the bench's two gate results on it: the grain that holds and the grain that does not.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 8 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Masked name finds 100 percent of the real customer links. Why does it score 0.0 percent?</p>
+      <button class="qopt" type="button">A · Because masked names are different on every platform</button>
+      <button class="qopt" type="button">B · Because it also claims 2,370,747 false links, and the rate is correct pairs over every pair that is true or claimed</button>
+      <button class="qopt" type="button">C · Because the break button was on</button>
+      <button class="qopt" type="button">D · Because order id was not ticked with it</button>
+      <p class="qwhy">Sixty-three masked names cover 8,333 people, so the key puts strangers together constantly. Recall alone would call it perfect; the union in the denominator is what makes a key that joins everything score as badly as one that joins nothing.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">2 · The break button shuffles the hidden ids. What does it prove when every grain falls to near zero?</p>
+      <button class="qopt" type="button">A · That the masking is too strict</button>
+      <button class="qopt" type="button">B · That store ids are not unique</button>
+      <button class="qopt" type="button">C · That the sample is too small to trust</button>
+      <button class="qopt" type="button">D · That the score measures whether a key reunites the real rows, not some property of the data's shape</button>
+      <p class="qwhy">The keys do not change when the ids are shuffled; only the truth does. A grain that held up under the shuffle would mean the bench was rewarding something other than matching. Nothing holds: customer 0.0, store 0.4, SKU 0.0 percent.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Under the default assumptions, pricing optimisation first adds the most GMV of any order and returns the least to Serai after the single customer view. What would make it the right first move?</p>
+      <button class="qopt" type="button">A · A revenue model paid mostly as a share of GMV: at a 6 percent share and a 6 percent uplift, pricing first overtakes hours first on the bench</button>
+      <button class="qopt" type="button">B · A bigger build squad, so it ships sooner</button>
+      <button class="qopt" type="button">C · A customer-grain join that clears the gate</button>
+      <button class="qopt" type="button">D · Nothing; it is always the wrong first move</button>
+      <p class="qwhy">Pricing's value lands in the brand's GMV, and Serai sees only its share. Raise the share and the same GMV becomes Serai's margin. The anti-lever is an anti-lever for a fee-based enabler; D overstates it, which is its own kind of error.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Pair-based scoring of a join: recall, precision and the Jaccard rate</span><span class="note">Computed in the browser and in the Python reference; both print the same counts to the pair</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The identity ladder on real orders</span><span class="note">Brazilian E-Commerce Public Dataset by Olist, Kaggle, CC BY-NC-SA 4.0; split, masking, names and phones constructed and labelled on the widget</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Marketplace buyer masking patterns</span><span class="note">Reported, from public integrator documentation for Shopee, Lazada and TikTok Shop; the bench's masking is modelled on them, not copied from any platform's API</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Sequencing by hours removed, with a data gate</span><span class="note">Applies the playbook's revenue-model rule and its data gate; every figure in the assumptions block is constructed</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Probabilistic record linkage</span><span class="note">Not taught here; the entity resolution course owns field weights, blocking and clerical review</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 8 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Score pairs, over the union</b><span>TP / (P + T - TP). A key that joins everything scores like one that joins nothing.</span></div>
+      <div class="cheat-item"><b>Customer grain: 23.3% at best</b><span>Masked fragments collide or go silent. A guess, not a key.</span></div>
+      <div class="cheat-item"><b>Your own keys hold</b><span>Store id 100.0%, SKU 97.5%. The gap is unmapped listings: maintain the table.</span></div>
+      <div class="cheat-item"><b>A hash needs the raw value</b><span>265 raw phones, zero links. Hashing is not a way round masking.</span></div>
+      <div class="cheat-item"><b>Break it</b><span>Shuffle the truth; every grain must fall. If one holds, the bench measures shape.</span></div>
+      <div class="cheat-item"><b>Pricing pays the brand</b><span>$7.3M of GMV, $511,972 less to Serai. Until the GMV share is large.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>That is the end of the analyst track. If you have not done the leader track, start at <a href="a1-what-an-enabler-sells.html">Leader session 1</a>: the same argument without code, ending in a one-page roadmap and a metric registry a chief financial officer would sign. If you have, put the bench's two gate results and your own crossover on that page, and the roadmap is finished.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 8 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b7-registry-as-code.html">← Prev: The metric registry as code</a> &nbsp;·&nbsp; <a href="../index.html">Course home</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/enabler-sample.js?v=1"></script>
+<script src="../assets/enabler-live.js?v=1"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

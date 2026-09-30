@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 1 of 8. The enabler data estate as seven domains, each marked by what you can actually obtain rather than what exists, the two dependency chains that carry most of the value, and a grain check on seven real Olist tables.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Seven domains, one enabler estate - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 1 of 8. Map the estate by obtainability, not existence. Seven real Olist tables, one registry in Python, and a review table whose id is not the grain.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b1-seven-domains.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Seven domains, one enabler estate - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 1 of 8. Seven domains, five obtainability words, two chains, one grain check.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 1 · Seven domains, one enabler estate - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 1 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 1 of 8</div>
+    <h1>Seven domains, <span class="accent">one enabler estate</span></h1>
+    <p class="sub">An enabler's data does not live in one system. It arrives from three marketplaces, two ad platforms, a content studio, a creator network and a chat inbox, and some of what matters most never arrives at all. Before anyone models anything, the estate needs a map that says, domain by domain, what you can actually get. Tonight you draw that map for Serai Commerce, learn the five words that describe obtainability, find the two chains most of the value hangs on, and write the first version of the estate registry in Python against seven real Olist tables, one of which has an id that is not its grain.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Foundational</span>
+      <span class="chip audience">Analysts and analytics engineers</span>
+      <span class="chip audience">Python, pandas</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Domains, obtainability, chains</span>
+      <span class="a3" style="flex:5">18-40 · Build-along: the estate registry</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How the analyst track works</h2>
+    </div>
+    <p class="lede">Eight sessions, Python and SQL, on real rows. Tonight is the map. Session 2 conforms three marketplace exports to one schema. Session 3 is the identity gate: which join keys survive the marketplaces' masking, and at which grain. Session 4 writes the per-minute event spec for a live channel, and session 5 turns Stop, Hold, Love, Buy into code. Session 6 follows content through a tagged archive to creator yield. Session 7 writes the metric registry as code. Session 8 is the bench, where the identity ladder and the roadmap sequencer run in your browser on real Olist orders. The stand-in data throughout is the public <strong>Olist</strong> dataset: real Brazilian marketplace orders, anonymised, which the pages split and mask to look like three marketplace exports. The split and masking are constructed; the orders, and who placed them, are real.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A seven-domain estate map with an obtainability word on every domain, a registry in Python that declares each table's domain and grain and checks the grain against the data, and the habit that saves the most time on an enabler's estate: asking "can we get it, at what grain" before "what could we do with it".</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the seven data domains of an enabler</span>
+      <h2>Seven domains, drawn around the work</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Group the estate by the work that produces it, not by the system it sits in. Serai's work falls into seven domains, and each one has a different owner, a different source and a different answer to the only question that matters on day one: how much of it can we actually have?</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn estate map with Serai's warehouse in the middle and seven domain boxes around it. Buyers and service is partial, because buyer identity is masked and chat is gated. Brands and stores is owned. Catalogue and listings is owned. Orders, fees and settlement is full via API. Ads and traffic is full for spend and partial for platform traffic. Content and live streams is owned for the archive and partial for performance. Creators and affiliates is partial.">
+        <defs>
+          <filter id="b1aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="13" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b1aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b1aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b1aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b1aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b1aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b1aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b1aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b1aW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b1aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b1aH" x="30" y="26">SERAI'S ESTATE, BY THE WORK THAT MAKES IT</text>
+        <text class="b1aS" x="360" y="26">the word under each domain is what you can obtain, not what exists</text>
+
+        <g filter="url(#b1aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- centre -->
+          <rect x="350" y="160" width="180" height="64" rx="12" transform="rotate(-0.5 440 192)" fill="#8A2330" stroke="#8A2330"/>
+          <!-- seven domain boxes -->
+          <rect x="30" y="50" width="220" height="62" rx="10" transform="rotate(-0.8 140 81)" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <rect x="330" y="50" width="220" height="62" rx="10" transform="rotate(0.6 440 81)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="630" y="50" width="220" height="62" rx="10" transform="rotate(-0.5 740 81)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="30" y="170" width="220" height="62" rx="10" transform="rotate(0.7 140 201)" fill="#FFFFFF"/>
+          <rect x="630" y="170" width="220" height="62" rx="10" transform="rotate(-0.6 740 201)" fill="url(#b1aHc)"/>
+          <rect x="130" y="286" width="220" height="62" rx="10" transform="rotate(0.5 240 317)" fill="#FDF1EF"/>
+          <rect x="530" y="286" width="220" height="62" rx="10" transform="rotate(-0.7 640 317)" fill="#FDF1EF"/>
+          <!-- spokes -->
+          <path d="M200 114 L360 164" marker-end="url(#b1aAr)"/>
+          <path d="M440 114 L440 156" marker-end="url(#b1aAr)"/>
+          <path d="M690 114 L520 164" marker-end="url(#b1aAr)"/>
+          <path d="M252 201 L344 196" marker-end="url(#b1aAr)"/>
+          <path d="M628 201 L536 196" marker-end="url(#b1aAr)"/>
+          <path d="M280 284 L376 228" marker-end="url(#b1aAr)"/>
+          <path d="M600 284 L504 228" marker-end="url(#b1aAr)"/>
+        </g>
+
+        <text class="b1aW" x="372" y="186">Serai warehouse</text>
+        <text class="b1aW" x="372" y="206">one conformed schema</text>
+
+        <text class="b1aL" x="46" y="76">1 · Buyers and service</text>
+        <text class="b1aR" x="46" y="96">partial · identity masked, chat gated</text>
+        <text class="b1aL" x="346" y="76">2 · Brands and stores</text>
+        <text class="b1aB" x="346" y="96">owned · contracts, store health</text>
+        <text class="b1aL" x="646" y="76">3 · Catalogue and listings</text>
+        <text class="b1aB" x="646" y="96">owned · master SKU, listing ids</text>
+        <text class="b1aL" x="46" y="196">4 · Orders, fees, settlement</text>
+        <text class="b1aS" x="46" y="216">full via API · the spine</text>
+        <text class="b1aL" x="646" y="196">5 · Ads and traffic</text>
+        <text class="b1aS" x="646" y="216">spend full · discovery closed</text>
+        <text class="b1aL" x="146" y="312">6 · Content and live streams</text>
+        <text class="b1aS" x="146" y="332">archive owned · results partial</text>
+        <text class="b1aL" x="546" y="312">7 · Creators and affiliates</text>
+        <text class="b1aS" x="546" y="332">partial · attributed GMV only</text>
+
+        <text class="b1aN" x="30" y="370">Two domains are fully Serai's own. The one most strategies start with, the buyer, is the least obtainable.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - domain 1 is red because the buyer is the one thing the marketplaces keep</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The seven, and what each one is for<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Domain</th><th>What is in it</th><th>Where it comes from</th><th>The decision it serves</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Buyers and service</strong></td><td>Masked buyer on each order, chat threads, reviews</td><td>Marketplace order and chat APIs, review pages</td><td>Service quality, stated objections before purchase</td></tr>
+            <tr><td><strong>2 · Brands and stores</strong></td><td>Contracts, fee terms, store health, decoration versions</td><td>Serai's own CRM and store audits</td><td>Which store needs attention, what each brand costs to serve</td></tr>
+            <tr><td><strong>3 · Catalogue and listings</strong></td><td>Master SKU, each platform's listing id, content per listing</td><td>Serai's catalogue tool, mapped to each platform</td><td>The same SKU across platforms, one screen</td></tr>
+            <tr><td><strong>4 · Orders, fees, settlement</strong></td><td>Orders, lines, returns, platform fees, payouts</td><td>Marketplace order and finance APIs</td><td>Everything with money in it. The spine</td></tr>
+            <tr><td><strong>5 · Ads and traffic</strong></td><td>Spend, creatives, rejections, store traffic</td><td>Ad platform APIs; platform traffic reports</td><td>Bid, pacing, creative, what to stop spending on</td></tr>
+            <tr><td><strong>6 · Content and live streams</strong></td><td>Asset archive, stream recordings, per-minute events</td><td>Serai's studio; platform live dashboards</td><td>Which content converts, which host sells</td></tr>
+            <tr><td><strong>7 · Creators and affiliates</strong></td><td>Creator ids, attributed and settled GMV, commissions</td><td>Affiliate reports, Serai's network roster</td><td>Which creator actually sells, where</td></tr>
+          </tbody>
+        </table>
+        <p>The grouping is this track's own, chosen because each domain has one owner inside an enabler. Your estate may split one or merge two; what matters is that every table you hold belongs to exactly one, and that the domain says who to ask when it breaks.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why "by the work" and not "by the source system"<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A map by source system (Platform A, Platform B, the ad manager, the studio drive) is the natural first draft and the wrong one. It puts the same idea in three places, one per marketplace, and it makes "orders" look like three problems when it is one domain with three feeds. Worse, it hides the question of ownership: nobody at Serai owns "Platform A", but somebody owns the catalogue and somebody owns customer service.</p>
+        <p>By the work, each domain has one owner and one conformed schema, and the three marketplaces become a column called <code>platform</code>. That column is what makes any comparison across them possible, and session 2 builds it.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The buyer is the least obtainable domain, on all three.</strong> Public integrator documentation reports that Shopee removes buyer names and phone numbers from orders while keeping the address for fulfilment, that Lazada masks buyer name, phone and address in its seller centre and exports from January 2026 and in its Open Platform API from July 2026, and that TikTok Shop desensitises recipient name and phone when its own logistics ship the order. Seller-delivered orders are the exception on the last two. All three are reported, from integrators' public notes, because the seller centres themselves sit behind a login. Session 3 measures what that does to a join.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers obtainability as a five-word scale</span>
+      <h2>Obtainability, not existence</h2>
+      <span class="tag concept">5 min live</span>
+    </div>
+    <p class="lede">Every domain "exists". The buyer exists, the platform's discovery funnel exists, the minute a viewer left a stream exists. What a roadmap needs is whether you can have it, in what shape, and what it costs to ask. Five words cover every case, and writing one of them on every row of the estate map ends most arguments before they start.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn staircase of five steps from owned at the top to closed at the bottom. Owned: yours outright, example the master SKU table. Full via API: complete for your own stores, example orders. Partial: some returns, the rest stays inside the platform, example creator attributed GMV. Gated: exists behind a permission you can ask for, example chat access. Closed: not available and no workaround, example the buyer's real phone number.">
+        <defs>
+          <filter id="b1bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="29" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b1bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b1bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b1bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b1bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b1bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b1bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b1bW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b1bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b1bH" x="30" y="26">FIVE WORDS, ONE PER ROW OF THE MAP</text>
+        <text class="b1bS" x="290" y="26">the lower the step, the more a use case built on it is a bet</text>
+
+        <g filter="url(#b1bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="48" width="150" height="40" rx="6" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="30" y="94" width="150" height="40" rx="6" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="30" y="140" width="150" height="40" rx="6" fill="url(#b1bHc)"/>
+          <rect x="30" y="186" width="150" height="40" rx="6" fill="#FDF1EF"/>
+          <rect x="30" y="232" width="150" height="40" rx="6" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <!-- a padlock doodle on the last step -->
+          <rect x="150" y="244" width="18" height="16" rx="2" stroke="#991B1B"/>
+          <path d="M153 244 L153 238 C153 232 165 232 165 238 L165 244" stroke="#991B1B"/>
+        </g>
+
+        <text class="b1bW" x="44" y="73">owned</text>
+        <text class="b1bB" x="44" y="119">full via API</text>
+        <text class="b1bL" x="44" y="165">partial</text>
+        <text class="b1bL" x="44" y="211">gated</text>
+        <text class="b1bR" x="44" y="257">closed</text>
+
+        <text class="b1bL" x="200" y="66">yours outright; no permission, no platform can withhold it</text>
+        <text class="b1bS" x="200" y="82">master SKU table, store contracts, the content archive</text>
+        <text class="b1bL" x="200" y="112">complete through the platform's API, for your own stores</text>
+        <text class="b1bS" x="200" y="128">orders, lines, returns, fees, ad spend</text>
+        <text class="b1bL" x="200" y="158">some of it comes back; the rest stays inside the platform</text>
+        <text class="b1bS" x="200" y="174">creator attributed GMV, store traffic, live room totals</text>
+        <text class="b1bL" x="200" y="204">exists, behind a permission you can apply for</text>
+        <text class="b1bS" x="200" y="220">platform chat access, seller-delivery unmasking exemptions</text>
+        <text class="b1bL" x="200" y="250">not available, and no workaround</text>
+        <text class="b1bS" x="200" y="266">the buyer's real name and phone on platform-shipped orders</text>
+
+        <text class="b1bN" x="30" y="292">A beautiful use case on a closed row is a two-year detour. The word is cheaper than the discovery.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - "gated" is the only word whose next step is an email, not an engineering plan</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>How to tell partial from full, in one query<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>"Full" and "partial" are easy to claim and easy to check. Take a week of one store's orders from the API and the same week from the seller centre's own summary. If the counts and the GMV agree to the order, the feed is full for that store. If the API returns orders but the seller centre shows traffic, impressions or buyer behaviour the API does not, that behaviour is partial: you can see it on a screen and cannot pipe it anywhere.</p>
+        <p>Write the test and its date next to the word. A "full" written in January without a test is a hope, and marketplace APIs change their fields every quarter.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>This is the playbook's data gate, applied to an enabler<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The five words are a finer version of the three states taught in the <a href="https://phoebefu6.github.io/learn-ship-playbook-with-phoebe/courses/04-the-data-gate.html">playbook's data gate session</a> (held, held partly, not held). Owned and full are "held"; partial is "held partly"; gated and closed split "not held" into the one you can ask for and the one you cannot. The split matters for an enabler because so much of its estate sits in other companies' systems, and "not held" hides whether the next step is a permission request or a dead end.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers the two dependency chains</span>
+      <h2>Two chains carry most of the value</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">The domains are not independent projects. Most of what brands will pay for hangs off two chains, and every link in each chain has to exist before the next one means anything. Both chains start in domains Serai fully owns or fully receives, which is the best news on the whole map.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two hand-drawn chains of three links each. Top chain: orders, full via API, to a cross-platform SKU view, which needs the master SKU mapping, to a regional read of the same category across markets. Bottom chain: the content archive, owned, to a tagged archive where each asset carries a persistent id joined to orders, to creator and content yield. A dashed box between the chains marks the buyer, closed, feeding neither.">
+        <defs>
+          <filter id="b1cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="43" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <marker id="b1cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b1cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b1cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b1cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b1cB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b1cR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b1cA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b1cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b1cH" x="30" y="26">WHAT HAS TO EXIST BEFORE WHAT</text>
+
+        <g filter="url(#b1cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="48" width="200" height="56" rx="10" transform="rotate(-0.6 130 76)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="330" y="48" width="220" height="56" rx="10" transform="rotate(0.5 440 76)" fill="#FDF1EF"/>
+          <rect x="650" y="48" width="200" height="56" rx="10" transform="rotate(-0.4 750 76)" fill="#FFFFFF"/>
+          <path d="M236 76 L322 76" marker-end="url(#b1cAr)"/>
+          <path d="M556 76 L642 76" marker-end="url(#b1cAr)"/>
+          <rect x="330" y="124" width="220" height="40" rx="8" stroke="#991B1B" stroke-dasharray="6 5" fill="#FEF2F2"/>
+          <rect x="30" y="184" width="200" height="56" rx="10" transform="rotate(0.5 130 212)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <rect x="330" y="184" width="220" height="56" rx="10" transform="rotate(-0.5 440 212)" fill="#FDF1EF"/>
+          <rect x="650" y="184" width="200" height="56" rx="10" transform="rotate(0.4 750 212)" fill="#FFFFFF"/>
+          <path d="M236 212 L322 212" marker-end="url(#b1cAr)"/>
+          <path d="M556 212 L642 212" marker-end="url(#b1cAr)"/>
+        </g>
+
+        <text class="b1cL" x="46" y="72">Orders and lines</text>
+        <text class="b1cB" x="46" y="90">full via API</text>
+        <text class="b1cA" x="250" y="66">needs</text>
+        <text class="b1cL" x="346" y="72">Cross-platform SKU view</text>
+        <text class="b1cS" x="346" y="90">needs the master SKU mapping</text>
+        <text class="b1cA" x="570" y="66">needs</text>
+        <text class="b1cL" x="666" y="72">Regional read</text>
+        <text class="b1cS" x="666" y="90">one category, four markets</text>
+
+        <text class="b1cR" x="346" y="149">the buyer: closed, feeds neither</text>
+
+        <text class="b1cL" x="46" y="208">Content archive</text>
+        <text class="b1cB" x="46" y="226">owned</text>
+        <text class="b1cA" x="250" y="202">needs</text>
+        <text class="b1cL" x="346" y="208">Tagged archive</text>
+        <text class="b1cS" x="346" y="226">a persistent id per asset</text>
+        <text class="b1cA" x="570" y="202">needs</text>
+        <text class="b1cL" x="666" y="208">Creator and content yield</text>
+        <text class="b1cS" x="666" y="226">settled GMV per asset</text>
+
+        <text class="b1cN" x="30" y="266">Both chains start on rows Serai owns or fully receives, and neither runs through the buyer.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the middle link of each chain is the work nobody budgets for, and the one that unlocks the rest</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why the middle link is the one to fund<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Orders arrive complete; the regional read is what brands entering a new market will pay for. Between them sits the <strong>master SKU mapping</strong>: one Serai id per product, mapped to each platform's listing id. Nobody asks for it by name and nothing works without it. Session 2 builds it, session 3 measures what happens when a few percent of listings are missing from it.</p>
+        <p>On the content chain the middle link is the <strong>tag</strong>: a persistent id on every asset Serai produces, carried into the listing or the stream, so a later order can be joined back to the asset that sold it. The platforms do not hand back content-level performance in a form you can pipe; the tag is how an enabler builds its own. Session 6 follows it end to end.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>A chain that does not exist: the single customer view<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Most enabler strategies draw a third chain: buyers across platforms to one customer, to lifetime value, to cross-platform retargeting. It starts on a closed row. Without a shared identifier and without the raw phone, there is no join key, and the leader track's session 4 explains why that makes the single customer view impossible rather than hard. The bench in session 8 measures it: on real orders, no combination of the keys the exports leave lifts the true match rate past 23.3 percent at customer grain, while Serai's own store id scores 100 percent at store grain.</p>
+        <p>Write it on the map anyway, marked closed. The most useful line in an estate map is sometimes the one that stops two years of work before it starts.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>The estate registry, on seven real tables</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Olist ships seven core tables. Place each one in a domain, declare its grain, and let the data check the declaration. Every number printed below is what the code prints on the public dataset; if yours differs, check the file version first.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seven hand-drawn table cards from Olist sorted into Serai's seven domains. Orders, items and payments go to domain 4. Customers and reviews go to domain 1. Sellers go to domain 2, products to domain 3. Domains 5, 6 and 7, ads, content and creators, receive no table: the stand-in cannot show them. The reviews card carries a warning: its id is not its grain.">
+        <defs>
+          <filter id="b1dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="53" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b1dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b1dH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b1dL { font: 600 11px Inter, sans-serif; fill: #2B1518; }
+          .b1dS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b1dB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b1dR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b1dN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b1dH" x="30" y="26">SEVEN OLIST TABLES, SEVEN DOMAINS</text>
+
+        <g filter="url(#b1dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="42" width="110" height="200" rx="8" fill="#FDF1EF"/>
+          <rect x="150" y="42" width="110" height="200" rx="8" fill="#FFFFFF"/>
+          <rect x="270" y="42" width="110" height="200" rx="8" fill="#FFFFFF"/>
+          <rect x="390" y="42" width="110" height="200" rx="8" fill="url(#b1dHc)"/>
+          <rect x="510" y="42" width="110" height="200" rx="8" stroke="#E2CDCB" stroke-dasharray="6 5"/>
+          <rect x="630" y="42" width="110" height="200" rx="8" stroke="#E2CDCB" stroke-dasharray="6 5"/>
+          <rect x="750" y="42" width="110" height="200" rx="8" stroke="#E2CDCB" stroke-dasharray="6 5"/>
+          <!-- table cards -->
+          <rect x="40" y="96" width="90" height="30" rx="4" transform="rotate(-2 85 111)" fill="#FFFFFF"/>
+          <rect x="40" y="136" width="90" height="30" rx="4" transform="rotate(1.5 85 151)" fill="#FEF2F2" stroke="#991B1B"/>
+          <rect x="160" y="96" width="90" height="30" rx="4" transform="rotate(1 205 111)" fill="#FFFFFF"/>
+          <rect x="280" y="96" width="90" height="30" rx="4" transform="rotate(-1.5 325 111)" fill="#FFFFFF"/>
+          <rect x="400" y="96" width="90" height="30" rx="4" transform="rotate(-1 445 111)" fill="#FFFFFF"/>
+          <rect x="400" y="136" width="90" height="30" rx="4" transform="rotate(1.2 445 151)" fill="#FFFFFF"/>
+          <rect x="400" y="176" width="90" height="30" rx="4" transform="rotate(-0.8 445 191)" fill="#FFFFFF"/>
+        </g>
+
+        <text class="b1dL" x="40" y="64">1 buyers</text>
+        <text class="b1dL" x="160" y="64">2 stores</text>
+        <text class="b1dL" x="280" y="64">3 catalogue</text>
+        <text class="b1dL" x="400" y="64">4 orders</text>
+        <text class="b1dS" x="520" y="64">5 ads</text>
+        <text class="b1dS" x="640" y="64">6 content</text>
+        <text class="b1dS" x="760" y="64">7 creators</text>
+
+        <text class="b1dS" x="50" y="115">customers</text>
+        <text class="b1dR" x="50" y="155">reviews</text>
+        <text class="b1dS" x="170" y="115">sellers</text>
+        <text class="b1dS" x="290" y="115">products</text>
+        <text class="b1dS" x="410" y="115">orders</text>
+        <text class="b1dS" x="410" y="155">items</text>
+        <text class="b1dS" x="410" y="195">payments</text>
+
+        <text class="b1dS" x="520" y="140">no table</text>
+        <text class="b1dS" x="640" y="140">no table</text>
+        <text class="b1dS" x="760" y="140">no table</text>
+        <text class="b1dR" x="40" y="192">id is not</text>
+        <text class="b1dR" x="40" y="208">the grain</text>
+
+        <text class="b1dN" x="30" y="262">Four domains filled, three empty. The stand-in shows the spine and the buyer, and none of the social half.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the empty columns are why sessions 4 to 6 use constructed data, labelled as such</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Get the data and count the tables.</strong> The no-login route is kagglehub. Run from a scratch folder, not inside a repo, so the CSVs do not end up committed.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · seven tables</span>import kagglehub, pandas as pd
+path = kagglehub.dataset_download("olistbr/brazilian-ecommerce")
+
+T = {"orders": "olist_orders_dataset.csv", "items": "olist_order_items_dataset.csv",
+     "payments": "olist_order_payments_dataset.csv", "reviews": "olist_order_reviews_dataset.csv",
+     "customers": "olist_customers_dataset.csv", "sellers": "olist_sellers_dataset.csv",
+     "products": "olist_products_dataset.csv"}
+df = {k: pd.read_csv(f"{path}/{v}") for k, v in T.items()}
+for k, d in df.items():
+    print(f"{k:&lt;10} {len(d):&gt;7} rows")
+# orders 99441 · items 112650 · payments 103886 · reviews 99224
+# customers 99441 · sellers 3095 · products 32951</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the registry: domain, grain, obtainability, owner.</strong> One dictionary, in one file, read by everything later. The grain is a list of columns that should identify a row; write down what you believe before you look.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · the estate registry</span>ESTATE = {
+  "orders":    {"domain": 4, "grain": ["order_id"],                        "obtain": "full",    "owner": "data eng"},
+  "items":     {"domain": 4, "grain": ["order_id", "order_item_id"],       "obtain": "full",    "owner": "data eng"},
+  "payments":  {"domain": 4, "grain": ["order_id", "payment_sequential"],  "obtain": "full",    "owner": "finance"},
+  "reviews":   {"domain": 1, "grain": ["review_id"],                       "obtain": "partial", "owner": "service"},
+  "customers": {"domain": 1, "grain": ["customer_id"],                     "obtain": "partial", "owner": "data eng"},
+  "sellers":   {"domain": 2, "grain": ["seller_id"],                       "obtain": "owned",   "owner": "brands"},
+  "products":  {"domain": 3, "grain": ["product_id"],                      "obtain": "owned",   "owner": "catalogue"},
+}</div>
+      </div>
+      <div class="step">
+        <p><strong>Let the data check every grain.</strong> A declared grain that has duplicates is a wrong belief, and every join built on it will fan out silently.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · the grain check</span>for name, t in ESTATE.items():
+    dup = df[name].duplicated(t["grain"]).sum()
+    print(f"{name:&lt;10} {'+'.join(t['grain']):&lt;32} duplicates {dup}")
+# orders 0 · items 0 · payments 0 · customers 0 · sellers 0 · products 0
+# reviews    review_id                        duplicates 814</div>
+      </div>
+      <div class="step">
+        <p><strong>Fix the one that failed, and write down why.</strong> 814 review ids repeat. Look before you drop: 789 review ids are attached to more than one order, so a review is one piece of text filed against several orders. The honest grain is the pair.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · the real grain of reviews</span>r = df["reviews"]
+print(r.groupby("review_id")["order_id"].nunique().gt(1).sum())   # 789
+print(r.duplicated(["review_id", "order_id"]).sum())               # 0
+ESTATE["reviews"]["grain"] = ["review_id", "order_id"]
+ESTATE["reviews"]["note"]  = "one review text can be filed against several orders"</div>
+      </div>
+      <div class="step">
+        <p><strong>Print the coverage by domain, including the empty ones.</strong> The empty domains belong in the output. A registry that lists only what you have makes the gaps invisible, and the gaps are where the roadmap's risks live.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · what the estate covers</span>DOMAINS = {1: "buyers and service", 2: "brands and stores", 3: "catalogue and listings",
+           4: "orders, fees, settlement", 5: "ads and traffic", 6: "content and live",
+           7: "creators and affiliates"}
+for n, label in DOMAINS.items():
+    tables = [k for k, t in ESTATE.items() if t["domain"] == n]
+    print(n, label, tables or "NONE")
+# 1 [reviews, customers] · 2 [sellers] · 3 [products] · 4 [orders, items, payments]
+# 5 NONE · 6 NONE · 7 NONE</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Keep the registry in one file and import it.</strong> Session 2 reads it to conform the exports, session 7 extends it into the metric registry. Two scripts with their own copy of the grain are two sources of truth, and they will disagree the week somebody fixes one.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 2</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Write the seven-domain map for an estate you work on. Put one obtainability word on every row, and a date and a test next to every "full".</li>
+      <li>Run the grain check on three tables you use every week. Most people find at least one declared key with duplicates; bring the count and the reason.</li>
+      <li>Find the master product id in your estate, if there is one. If each marketplace's listing id is used directly in reports, write down how many reports would break if a listing were re-created.</li>
+      <li>Mark the closed rows on your map and write, next to each, the use case somebody has already proposed on top of it.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 1 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Why group the estate by the work that produces the data rather than by source system?</p>
+      <button class="qopt" type="button">A · Because source systems change names more often than teams do</button>
+      <button class="qopt" type="button">B · Because each domain then has one owner and one conformed schema, and the three marketplaces become a column instead of three copies of every idea</button>
+      <button class="qopt" type="button">C · Because the marketplaces require it in their developer terms</button>
+      <button class="qopt" type="button">D · Because it gives fewer tables to maintain</button>
+      <p class="qwhy">By source, "orders" is three problems; by the work, it is one domain with three feeds and a platform column. That column is what makes any cross-platform comparison possible, and the owner is who you call when it breaks.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">2 · Chat access is available on one marketplace only if you apply for it. Which word goes on that row?</p>
+      <button class="qopt" type="button">A · Partial, because some chats come through</button>
+      <button class="qopt" type="button">B · Closed, because you do not have it today</button>
+      <button class="qopt" type="button">C · Full via API, because the endpoint exists</button>
+      <button class="qopt" type="button">D · Gated: it exists behind a permission you can ask for, so the next step is a request, not a build</button>
+      <p class="qwhy">Gated and closed are both "not held" today, and they call for opposite next steps. Gated means ask in week one. Closed means stop, and write it down so nobody spends a year on it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · The grain check reports 814 duplicate review ids. What is the right move?</p>
+      <button class="qopt" type="button">A · Look first: 789 review ids are filed against more than one order, so the real grain is review id plus order id, and the registry should say so</button>
+      <button class="qopt" type="button">B · Drop the duplicates, keeping the first row of each review id</button>
+      <button class="qopt" type="button">C · Ignore it, since reviews are only 1 percent duplicated</button>
+      <button class="qopt" type="button">D · Replace review_id with a new surrogate key and move on</button>
+      <p class="qwhy">A duplicate on a declared grain is a wrong belief about the data, not dirt. Dropping rows would lose real order-to-review links; the pair has zero duplicates, so the grain is the pair, with the reason written next to it.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The seven data domains of an enabler</span><span class="note">This track's own grouping, by the work and its owner; Serai's sources and owners are constructed</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Obtainability as five words</span><span class="note">Owned, full via API, partial, gated, closed; a finer cut of the playbook's data gate, linked rather than re-taught</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The two dependency chains</span><span class="note">Orders to SKU view to regional read; content to tagged archive to creator yield</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Olist's seven tables and their grains</span><span class="note">Brazilian E-Commerce Public Dataset by Olist, Kaggle, CC BY-NC-SA 4.0; every count, including the 814 duplicate review ids, measured in this build</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Marketplace buyer masking</span><span class="note">Reported, from public integrator documentation; the seller centres are behind a login. Measured on the bench in session 8</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>By the work</b><span>Seven domains, one owner each; the marketplace is a column, not a folder.</span></div>
+      <div class="cheat-item"><b>Five words</b><span>Owned, full via API, partial, gated, closed. One per row, with a dated test.</span></div>
+      <div class="cheat-item"><b>Gated is an email</b><span>Closed is a stop. Both are "not held"; they need opposite next steps.</span></div>
+      <div class="cheat-item"><b>Two chains</b><span>Orders to SKU view to regional read; content to tagged archive to creator yield.</span></div>
+      <div class="cheat-item"><b>Fund the middle link</b><span>The master SKU mapping and the asset tag. Nobody asks for them; nothing works without them.</span></div>
+      <div class="cheat-item"><b>Check the grain</b><span>Declare it, then let the data disagree. Olist reviews: the grain is the pair.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>You have the map and the registry. Session 2 splits the real Olist orders into three marketplace-style exports, each with its own column names, id formats and masking, and conforms them back into one order schema with a platform column and two mapping tables Serai owns. It is the least glamorous session on the track and the one every later number stands on.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 1 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← Course home</a> &nbsp;·&nbsp; <a href="b2-three-exports-one-schema.html">Next: Three marketplace exports, one schema →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 4 of 8. The per-minute event spec for Pasar Live, a constructed live channel, written as a contract between eight teams: five events, one clock, an owner and a version on every field, and four checks every stream must pass before anyone scores it.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Per-minute events for a live channel - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 4 of 8. Five events, one clock, eight owners. Write the spec in Python, build a minute table from one constructed stream, and watch four checks reject it when a minute goes missing.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b4-per-minute-events.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Per-minute events for a live channel - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 4 of 8. The event spec as a contract: five events, one clock, eight owners, four checks.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 4 · Per-minute events for a live channel - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 4 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 4 of 8</div>
+    <h1><span class="accent">Per-minute events</span> for a live channel</h1>
+    <p class="sub">A live stream on Pasar Live touches eight teams, and every one of them will happily read a number that another team produced on a different clock. The table they share is only as good as the agreement underneath it: which five events exist, what each one means, who fires it, who owns it, which version of the definition was live on the night. Tonight you write that agreement as a spec, in Python, for the constructed channel from leader session 3. Then you build a minute table from one constructed 60-minute stream, run the four checks every stream must pass before it is scored, and break the stream twice on purpose to watch the checks do their job.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Analysts and data engineers</span>
+      <span class="chip audience">Python, SQL</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-19 · Events, owners, checks</span>
+      <span class="a3" style="flex:6">19-41 · Build-along: spec, table, checks</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where this sits in the analyst track</h2>
+    </div>
+    <p class="lede">Sessions 1 to 3 dealt with data that arrives whole: orders, lines, stores, SKUs, and the keys that do or do not survive masking. A live channel is different. Its most useful data is a stream of small events, most of them fired by software Serai does not own, and nobody downstream can tell a missing minute from a quiet one. Tonight is the operator side of that problem: the spec as a contract, the owners, the versioning and the gate. Session 5 reads the tables that pass the gate and turns them into Stop, Hold, Love, Buy. Pasar Live, Serai Commerce, the stream and every number on this page are constructed; the pattern is the one any team running a live channel across several brands ends up needing.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A five-event spec with a definition, a grain, a source, an owner and a first-seen version on every field; a minute-table builder that de-duplicates on an idempotency key; and a four-check gate that says "scored" or "rejected" for every stream, with the reason printed. Plus the habit that saves the most arguments on a live channel: nobody reads a stream the gate has not passed.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the five events, their keys and the one clock</span>
+      <h2>Five events, one clock</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Pasar Live's minute table counts five things: <strong>room entry</strong>, <strong>product card impression</strong>, <strong>product click</strong>, <strong>add to cart</strong> and <strong>order</strong>. Every row is keyed by <code>stream_id + minute + sku</code>, and every timestamp sits on one clock: UTC, with the minute the platform marks the room live as minute 0. How that table is modelled and what livestream data science does with it belongs to the <a href="https://phoebefu6.github.io/learn-live-commerce-analytics-with-phoebe/courses/b1-stream-as-data.html">live commerce course's session on the stream as data</a>. This session is about the agreement that has to exist before the table can be trusted.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn timeline of the first six minutes of constructed stream PL-0412. Rows are the five events, columns are minutes 0 to 5. Room entries per minute: 7, 14, 18, 29, 24, 34. Product card impressions: 15, 15, 23, 24, 28, 30. Product clicks: 1, 6, 3, 2, 4, 5. Add to cart: 1, 3, 2, 1, 3, 3. Orders: 1, 1, 2, 1, 2, 2. Minute 0 is highlighted as 12:00:00 UTC, the stream start.">
+        <defs>
+          <filter id="b4aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="41" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b4aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b4aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b4aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b4aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b4aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b4aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b4aA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b4aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b4aH" x="30" y="26">ONE CONSTRUCTED STREAM, PL-0412, MINUTES 0 TO 5</text>
+        <text class="b4aS" x="420" y="26">every mark is counted in the minute it fired, per stream and SKU</text>
+
+        <g filter="url(#b4aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- minute 0 band: the one clock -->
+          <rect x="222" y="44" width="96" height="244" rx="8" transform="rotate(-0.3 270 166)" fill="#E2F3F0" stroke="#0E6F68"/>
+          <!-- minute boundaries -->
+          <path d="M426 48 L426 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <path d="M530 48 L530 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <path d="M634 48 L634 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <path d="M738 48 L738 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <path d="M842 48 L842 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <path d="M322 48 L322 284" stroke="#E2CDCB" stroke-dasharray="4 5"/>
+          <!-- time arrow -->
+          <path d="M222 300 L850 300" marker-end="url(#b4aAr)"/>
+          <!-- doodle: a studio clock -->
+          <circle cx="196" cy="58" r="10"/>
+          <path d="M196 58 L196 51 M196 58 L201 61"/>
+          <!-- room entry bars (count x 2) -->
+          <rect x="246" y="93" width="14" height="12" fill="url(#b4aHc)"/>
+          <rect x="350" y="93" width="28" height="12" fill="url(#b4aHc)"/>
+          <rect x="454" y="93" width="36" height="12" fill="url(#b4aHc)"/>
+          <rect x="558" y="93" width="58" height="12" fill="url(#b4aHc)"/>
+          <rect x="662" y="93" width="48" height="12" fill="url(#b4aHc)"/>
+          <rect x="766" y="93" width="68" height="12" fill="url(#b4aHc)"/>
+          <!-- card impression bars (count x 2) -->
+          <rect x="246" y="135" width="30" height="12" fill="url(#b4aHc)"/>
+          <rect x="350" y="135" width="30" height="12" fill="url(#b4aHc)"/>
+          <rect x="454" y="135" width="46" height="12" fill="url(#b4aHc)"/>
+          <rect x="558" y="135" width="48" height="12" fill="url(#b4aHc)"/>
+          <rect x="662" y="135" width="56" height="12" fill="url(#b4aHc)"/>
+          <rect x="766" y="135" width="60" height="12" fill="url(#b4aHc)"/>
+          <!-- product clicks: one tick per click -->
+          <path d="M248 176 L248 189"/>
+          <path d="M352 176 L352 189 M358 176 L358 189 M364 176 L364 189 M370 176 L370 189 M376 176 L376 189 M382 176 L382 189"/>
+          <path d="M456 176 L456 189 M462 176 L462 189 M468 176 L468 189"/>
+          <path d="M560 176 L560 189 M566 176 L566 189"/>
+          <path d="M664 176 L664 189 M670 176 L670 189 M676 176 L676 189 M682 176 L682 189"/>
+          <path d="M768 176 L768 189 M774 176 L774 189 M780 176 L780 189 M786 176 L786 189 M792 176 L792 189"/>
+          <!-- add to cart ticks -->
+          <path d="M248 218 L248 231"/>
+          <path d="M352 218 L352 231 M358 218 L358 231 M364 218 L364 231"/>
+          <path d="M456 218 L456 231 M462 218 L462 231"/>
+          <path d="M560 218 L560 231"/>
+          <path d="M664 218 L664 231 M670 218 L670 231 M676 218 L676 231"/>
+          <path d="M768 218 L768 231 M774 218 L774 231 M780 218 L780 231"/>
+          <!-- order ticks, deep -->
+          <path d="M248 260 L248 273" stroke="#8A2330" stroke-width="3"/>
+          <path d="M352 260 L352 273" stroke="#8A2330" stroke-width="3"/>
+          <path d="M456 260 L456 273 M463 260 L463 273" stroke="#8A2330" stroke-width="3"/>
+          <path d="M560 260 L560 273" stroke="#8A2330" stroke-width="3"/>
+          <path d="M664 260 L664 273 M671 260 L671 273" stroke="#8A2330" stroke-width="3"/>
+          <path d="M768 260 L768 273 M775 260 L775 273" stroke="#8A2330" stroke-width="3"/>
+        </g>
+
+        <text class="b4aB" x="236" y="64">min 0</text>
+        <text class="b4aA" x="340" y="64">min 1</text>
+        <text class="b4aA" x="444" y="64">min 2</text>
+        <text class="b4aA" x="548" y="64">min 3</text>
+        <text class="b4aA" x="652" y="64">min 4</text>
+        <text class="b4aA" x="756" y="64">min 5</text>
+
+        <text class="b4aL" x="30" y="98">room entry</text>
+        <text class="b4aS" x="30" y="113">platform, per minute</text>
+        <text class="b4aL" x="30" y="140">card impression</text>
+        <text class="b4aS" x="30" y="155">Serai overlay</text>
+        <text class="b4aL" x="30" y="182">product click</text>
+        <text class="b4aS" x="30" y="197">Serai overlay</text>
+        <text class="b4aL" x="30" y="224">add to cart</text>
+        <text class="b4aS" x="30" y="239">platform, per minute</text>
+        <text class="b4aL" x="30" y="266">order</text>
+        <text class="b4aS" x="30" y="281">platform order API</text>
+
+        <text class="b4aL" x="226" y="104">7</text>
+        <text class="b4aL" x="330" y="104">14</text>
+        <text class="b4aL" x="434" y="104">18</text>
+        <text class="b4aL" x="538" y="104">29</text>
+        <text class="b4aL" x="642" y="104">24</text>
+        <text class="b4aL" x="746" y="104">34</text>
+        <text class="b4aL" x="226" y="146">15</text>
+        <text class="b4aL" x="330" y="146">15</text>
+        <text class="b4aL" x="434" y="146">23</text>
+        <text class="b4aL" x="538" y="146">24</text>
+        <text class="b4aL" x="642" y="146">28</text>
+        <text class="b4aL" x="746" y="146">30</text>
+        <text class="b4aL" x="226" y="188">1</text>
+        <text class="b4aL" x="330" y="188">6</text>
+        <text class="b4aL" x="434" y="188">3</text>
+        <text class="b4aL" x="538" y="188">2</text>
+        <text class="b4aL" x="642" y="188">4</text>
+        <text class="b4aL" x="746" y="188">5</text>
+        <text class="b4aL" x="226" y="230">1</text>
+        <text class="b4aL" x="330" y="230">3</text>
+        <text class="b4aL" x="434" y="230">2</text>
+        <text class="b4aL" x="538" y="230">1</text>
+        <text class="b4aL" x="642" y="230">3</text>
+        <text class="b4aL" x="746" y="230">3</text>
+        <text class="b4aL" x="226" y="272">1</text>
+        <text class="b4aL" x="330" y="272">1</text>
+        <text class="b4aL" x="434" y="272">2</text>
+        <text class="b4aL" x="538" y="272">1</text>
+        <text class="b4aL" x="642" y="272">2</text>
+        <text class="b4aL" x="746" y="272">2</text>
+
+        <text class="b4aB" x="30" y="304">minute 0 = 12:00:00 UTC</text>
+
+        <text class="b4aN" x="30" y="326">Constructed, seed 4. Five events, keyed stream_id + minute + sku, all on one clock that starts at minute 0.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the teal column is the only thing every team must agree on before any other number means anything</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Six fields on every event in the spec<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Field</th><th>What it says</th><th>Why it has to be written</th></tr></thead>
+          <tbody>
+            <tr><td><strong>name</strong></td><td>The exact string in the log, <code>product_click</code></td><td>A renamed event is a new event to every query that filters on the old name</td></tr>
+            <tr><td><strong>definition</strong></td><td>One sentence a new analyst could compute from</td><td>"Impression" means nothing until you say on screen for how long</td></tr>
+            <tr><td><strong>grain</strong></td><td>The key a count sits at: <code>stream_id, minute</code> or <code>stream_id, minute, sku</code></td><td>Room entries belong to the room, not a product; summing them per SKU triple-counts</td></tr>
+            <tr><td><strong>source</strong></td><td>Who fires it: Serai's overlay, the platform's per-minute totals, the order API</td><td>It decides what you can fix yourself and what you can only reconcile</td></tr>
+            <tr><td><strong>owner</strong></td><td>One team, never two</td><td>It is who gets called when the column is empty at 21:00</td></tr>
+            <tr><td><strong>first-seen version</strong></td><td>The spec version the event appeared in</td><td>Lets anyone tell "zero clicks" from "clicks were not tracked yet"</td></tr>
+          </tbody>
+        </table>
+        <p>Why the minute, and not the frame or the whole stream? The frame is finer than any event can be timed across two systems, so it manufactures precision nobody has. The whole stream is too coarse to coach from: the point of the table is to find the minute a host lost the room. A minute is the smallest window in which Serai's overlay, the platform's per-minute totals and the order API can all be made to agree.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What Serai logs itself, and what only the platform can tell it<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Session 1's obtainability words apply event by event. In the constructed Pasar Live set-up, Serai's studio runs its own <strong>overlay</strong>, the layer that pins product cards on screen and takes the tap, on its own <strong>studio clock</strong>, synced to UTC. Those events are <em>owned</em>: Serai fires them, stores them raw and can re-count them.</p>
+        <ul>
+          <li><strong>Owned, from the overlay:</strong> product card impressions and product clicks, one row per event with its own id.</li>
+          <li><strong>Full via API:</strong> orders, from the platform's order API, each with a placed timestamp Serai can put on its own minute.</li>
+          <li><strong>Partial, platform per-minute totals:</strong> room entries and add to cart. Serai gets a count per minute, not the events behind it.</li>
+          <li><strong>Partial, platform totals only:</strong> <em>live card impressions</em>, the times the stream's cover appeared in someone's feed. That is the denominator of Stop, and it arrives as one number per stream, after the stream ends.</li>
+        </ul>
+        <p>The line matters because it decides the fix. An owned event that looks wrong can be re-counted from raw. A platform total that looks wrong can only be reconciled against, which is exactly what check 4 in Part 3 does.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Late events, duplicate events and the idempotency key<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Phones on bad networks retry. An overlay that did not hear an acknowledgement sends the same tap again, sometimes seconds later, sometimes after the stream has ended. If the pipeline counts what arrives, a retry storm looks like a surge of interest.</p>
+        <p>The fix is an <strong>idempotency key</strong>: an id the event carries from the moment it was fired, so that processing it twice gives the same result as processing it once. De-duplicate on that id, never on the timestamp (two real taps can share a second) and never on the whole row (a retry can carry a different arrival time). A late event is then just an event: it lands in the minute of its own timestamp, not the minute it arrived, and the stream's minute table is rebuilt until the platform's end-of-stream totals are in.</p>
+        <p>Platform per-minute totals have no event id, so they cannot be de-duplicated by you. Write that on the spec's source field. It is the honest reason those columns are reconciled, not re-counted.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Two impression counts for one stream, constructed.</strong> In Pasar Live's first month, Serai's overlay counted product card impressions from the moment a card was pinned; the brand's own report, read from the platform dashboard, counted a card only once it had been on screen for a full second. Same stream, same word, two numbers, and a brand manager asking which one her fee was built on. Nothing was broken. The word had no definition. The fix was one sentence in the spec and a version number on it.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers ownership, change control and versioning of the event spec</span>
+      <h2>The spec is a contract with owners</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">Leader session 3 put eight teams around one minute-grain table. A table eight teams read is eight teams' numbers, and the spec underneath it is a contract between them: one owner per field, a stated way to change it, a version on every release. Without that, a single rename by one team silently changes the other seven teams' dashboards, and nobody finds out until a Monday meeting disagrees with itself.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 356" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn contract sheet. Rows are six fields: room entry, product card impression, product click, add to cart, order, and minute 0, the stream start. Columns are the eight teams: tech, data engineering, analysts, live ops, traffic ops, commercial, brand teams and hosts. Tech owns room entry, card impression and product click. Data engineering owns add to cart and order. Every field is read by several teams. The minute 0 row is highlighted: all eight teams read it and none owned it until spec version 1.0.0 gave it to data engineering.">
+        <defs>
+          <filter id="b4bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="59" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+        </defs>
+        <style>
+          .b4bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b4bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b4bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b4bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b4bA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b4bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b4bH" x="30" y="26">THE PASAR LIVE EVENT CONTRACT, SPEC 1.0.0</text>
+        <text class="b4bS" x="360" y="26">constructed · filled dot = owns the field · open ring = reads it</text>
+
+        <g filter="url(#b4bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- the sheet -->
+          <rect x="20" y="40" width="846" height="252" rx="8" transform="rotate(0.3 443 166)" fill="#FFFFFF"/>
+          <!-- doodle: paper clip -->
+          <path d="M40 34 L40 60 C40 68 52 68 52 60 L52 38 C52 33 46 33 46 38 L46 58"/>
+          <!-- header rule and row rules -->
+          <path d="M30 74 L856 74"/>
+          <path d="M30 112 L856 112" stroke="#F1E4E2"/>
+          <path d="M30 146 L856 146" stroke="#F1E4E2"/>
+          <path d="M30 180 L856 180" stroke="#F1E4E2"/>
+          <path d="M30 214 L856 214" stroke="#F1E4E2"/>
+          <path d="M30 248 L856 248" stroke="#F1E4E2"/>
+          <!-- the field nobody owned -->
+          <rect x="26" y="252" width="834" height="32" rx="6" fill="#E2F3F0" stroke="#0E6F68"/>
+          <!-- row 1 room entry: owner tech; readers data eng, analysts, live ops, traffic ops, hosts -->
+          <circle cx="279" cy="96" r="7" fill="#8A2330" stroke="#8A2330"/>
+          <circle cx="357" cy="96" r="6"/>
+          <circle cx="435" cy="96" r="6"/>
+          <circle cx="513" cy="96" r="6"/>
+          <circle cx="591" cy="96" r="6"/>
+          <circle cx="825" cy="96" r="6"/>
+          <!-- row 2 card impression: owner tech; readers data eng, analysts, commercial, brand teams -->
+          <circle cx="279" cy="130" r="7" fill="#8A2330" stroke="#8A2330"/>
+          <circle cx="357" cy="130" r="6"/>
+          <circle cx="435" cy="130" r="6"/>
+          <circle cx="669" cy="130" r="6"/>
+          <circle cx="747" cy="130" r="6"/>
+          <!-- row 3 product click: owner tech; readers data eng, analysts, commercial, hosts -->
+          <circle cx="279" cy="164" r="7" fill="#8A2330" stroke="#8A2330"/>
+          <circle cx="357" cy="164" r="6"/>
+          <circle cx="435" cy="164" r="6"/>
+          <circle cx="669" cy="164" r="6"/>
+          <circle cx="825" cy="164" r="6"/>
+          <!-- row 4 add to cart: owner data eng; readers analysts, commercial, brand teams -->
+          <circle cx="357" cy="198" r="7" fill="#8A2330" stroke="#8A2330"/>
+          <circle cx="435" cy="198" r="6"/>
+          <circle cx="669" cy="198" r="6"/>
+          <circle cx="747" cy="198" r="6"/>
+          <!-- row 5 order: owner data eng; readers analysts, traffic ops, commercial, brand teams, hosts -->
+          <circle cx="357" cy="232" r="7" fill="#8A2330" stroke="#8A2330"/>
+          <circle cx="435" cy="232" r="6"/>
+          <circle cx="591" cy="232" r="6"/>
+          <circle cx="669" cy="232" r="6"/>
+          <circle cx="747" cy="232" r="6"/>
+          <circle cx="825" cy="232" r="6"/>
+          <!-- row 6 minute 0: read by all eight, owned by none -->
+          <circle cx="279" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="357" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="435" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="513" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="591" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="669" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="747" cy="268" r="6" stroke="#0E6F68"/>
+          <circle cx="825" cy="268" r="6" stroke="#0E6F68"/>
+        </g>
+
+        <text class="b4bA" x="279" y="64" text-anchor="middle">tech</text>
+        <text class="b4bA" x="357" y="64" text-anchor="middle">data eng</text>
+        <text class="b4bA" x="435" y="64" text-anchor="middle">analysts</text>
+        <text class="b4bA" x="513" y="64" text-anchor="middle">live ops</text>
+        <text class="b4bA" x="591" y="64" text-anchor="middle">traffic ops</text>
+        <text class="b4bA" x="669" y="64" text-anchor="middle">commercial</text>
+        <text class="b4bA" x="747" y="64" text-anchor="middle">brand teams</text>
+        <text class="b4bA" x="825" y="64" text-anchor="middle">hosts</text>
+
+        <text class="b4bL" x="64" y="100">room entry</text>
+        <text class="b4bL" x="64" y="134">card impression</text>
+        <text class="b4bL" x="64" y="168">product click</text>
+        <text class="b4bL" x="64" y="202">add to cart</text>
+        <text class="b4bL" x="64" y="236">order</text>
+        <text class="b4bB" x="40" y="272">minute 0 (stream start)</text>
+
+        <text class="b4bB" x="30" y="314">minute 0: read by all eight teams, owned by none. Spec 1.0.0 gave it to data engineering.</text>
+        <text class="b4bN" x="30" y="340">Constructed. The field every team reads and nobody owns is the one that breaks first, and quietly.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - five fields had an owner from day one; the clock everyone depended on had none</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Eight teams, and the one question each one asks of the spec<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Team</th><th>Owns in the spec</th><th>Reads, and needs to be true</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tech</strong></td><td>Room entry ingestion, card impression, product click</td><td>Which events went missing, per stream</td></tr>
+            <tr><td><strong>Data engineering</strong></td><td>Add to cart, order, the clock and minute 0</td><td>Where the joins break</td></tr>
+            <tr><td><strong>Analysts</strong></td><td>The stage definitions built on top (session 5)</td><td>Every column, at the grain it was declared</td></tr>
+            <tr><td><strong>Live ops</strong></td><td>Notes on the minute, attached as labels</td><td>Room entries, to find the minute the room left</td></tr>
+            <tr><td><strong>Traffic ops</strong></td><td>Promo and push timestamps</td><td>Entries and orders after each push</td></tr>
+            <tr><td><strong>Commercial</strong></td><td>Assortment per stream</td><td>Cards, clicks, carts and orders by SKU</td></tr>
+            <tr><td><strong>Brand teams</strong></td><td>Room set-up, SKU count</td><td>Their own brand's impressions, carts and orders</td></tr>
+            <tr><td><strong>Hosts</strong></td><td>The stream itself</td><td>Entries, clicks and orders on their own scorecard</td></tr>
+          </tbody>
+        </table>
+        <p>Ownership here means "fires it, or ingests it, and answers for it". Analysts own no event, on purpose: the team that defines the stages should not also be the team that can quietly adjust the counts under them.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Change control: a rename is a breaking change<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Version the spec the way software versions an interface, because that is what it is. A three-part number, <code>MAJOR.MINOR.PATCH</code>, with a rule for each part:</p>
+        <ul>
+          <li><strong>MAJOR</strong>: an event renamed or removed, a definition changed, a grain changed. Every reader's numbers can move. It needs every owner's sign-off, a date, and a period in which the old and new names are both emitted.</li>
+          <li><strong>MINOR</strong>: a new event or a new optional field. Nobody's old numbers move. The owner announces it; the <code>first_seen</code> field records it.</li>
+          <li><strong>PATCH</strong>: wording that clarifies without changing what is counted.</li>
+        </ul>
+        <p>Every minute table carries the spec version it was built under, as a column. When session 5 compares a stream from March with one from June, the first question is whether they were counted under the same major version. If not, the comparison needs a sentence, and the <a href="https://phoebefu6.github.io/learn-ecommerce-metrics-with-phoebe/courses/a6-metric-governance.html">metric governance session in the ecommerce metrics course</a> covers how that sentence is kept for company metrics. Session 7 applies the same versioning to the metric registry.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What "done" means for tech, written into the spec<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A tracking ticket that says "add click event" is done when the code ships. A tracking ticket written against the spec is done when four things are true, and the spec says so in its own words:</p>
+        <ol>
+          <li>The event fires with the <strong>exact name</strong> in the spec, carrying an event id, a UTC timestamp, the stream id and, where the grain says so, the SKU.</li>
+          <li>It has run on <strong>one real stream</strong> and the minute table built from it passes all four checks in Part 3.</li>
+          <li>The <strong>spec version</strong> is bumped, with the event's <code>first_seen</code> set, and every owner has seen the change.</li>
+          <li>The <strong>readers</strong> named in the contract have been told what moved, and when.</li>
+        </ol>
+        <p>Item 2 is the one that changes behaviour. It turns "we shipped the event" into "a stream counted with the event has passed the gate", which is the only version of done the other seven teams care about.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The overlay release that zeroed a stage, constructed.</strong> Two months into Pasar Live, an overlay release renamed <code>product_click</code> to <code>card_tap</code>, a tidy-up nobody thought of as a change. For two days every host's click rate read zero, commercial pulled a SKU that "nobody clicked", and a brand host was told her Buy stage had collapsed. The event had fired perfectly the whole time, under a name no query was filtering on. After that week, a rename became a MAJOR version with both names emitted for a fortnight, and "done" for tracking work started to mean a stream counted with the change had passed the gate.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers the four checks a stream must pass before it is scored</span>
+      <h2>Validate before anyone reads it</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">A minute table that has not been checked is a rumour with columns. Four checks run on every stream, in order, before the table is released to the eight teams. A stream that fails any one of them is <strong>rejected</strong>, not scored with a footnote, and the reason is printed next to it. The checks are cheap; the argument they prevent is not.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn gate with four panels under one arch. Panel 1, funnel order: three cumulative lines for card impressions, clicks and orders that never cross. Panel 2, no gap minutes: a strip of minute cells with minute 17 missing, drawn dashed in red. Panel 3, one clock: two clocks showing the same time, both UTC, minute 0 at the start. Panel 4, reconciles: Serai's count bar next to the platform's end-of-stream total, inside a 2 percent tolerance bracket. Below the gate, a teal box marks scored and a red box marks rejected.">
+        <defs>
+          <filter id="b4cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="71" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b4cHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b4cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b4cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b4cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b4cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b4cR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b4cW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b4cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b4cH" x="30" y="26">FOUR CHECKS, EVERY STREAM, BEFORE ANYONE READS IT</text>
+
+        <g filter="url(#b4cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- the gate: arch and posts -->
+          <path d="M24 70 C200 36 680 36 856 70"/>
+          <path d="M24 70 L24 244 M856 70 L856 244"/>
+          <!-- four panels -->
+          <rect x="36" y="74" width="190" height="164" rx="8" transform="rotate(-0.6 131 156)" fill="#FFFFFF"/>
+          <rect x="242" y="74" width="190" height="164" rx="8" transform="rotate(0.5 337 156)" fill="#FFFFFF"/>
+          <rect x="448" y="74" width="190" height="164" rx="8" transform="rotate(-0.4 543 156)" fill="#FFFFFF"/>
+          <rect x="654" y="74" width="190" height="164" rx="8" transform="rotate(0.6 749 156)" fill="#FFFFFF"/>
+          <!-- panel 1: three cumulative lines that never cross -->
+          <path d="M50 214 L50 144"/>
+          <path d="M50 214 L210 214"/>
+          <path d="M52 204 C90 184 150 162 206 148" stroke="#BE3745"/>
+          <path d="M52 210 C100 200 150 188 206 178" stroke="#E0685E"/>
+          <path d="M52 212 C110 208 160 204 206 200" stroke="#8A2330"/>
+          <!-- panel 2: minute strip with one hole -->
+          <rect x="258" y="150" width="30" height="28" rx="3" fill="url(#b4cHc)"/>
+          <rect x="292" y="150" width="30" height="28" rx="3" fill="url(#b4cHc)"/>
+          <rect x="326" y="150" width="30" height="28" rx="3" stroke="#991B1B" stroke-dasharray="4 4" fill="#FEF2F2"/>
+          <rect x="360" y="150" width="30" height="28" rx="3" fill="url(#b4cHc)"/>
+          <rect x="394" y="150" width="30" height="28" rx="3" fill="url(#b4cHc)"/>
+          <!-- panel 3: two clocks, same time -->
+          <circle cx="505" cy="170" r="24"/>
+          <path d="M505 170 L505 152 M505 170 L517 176"/>
+          <circle cx="585" cy="170" r="24"/>
+          <path d="M585 170 L585 152 M585 170 L597 176"/>
+          <!-- panel 4: ours vs platform, tolerance bracket -->
+          <rect x="690" y="140" width="40" height="72" rx="3" fill="url(#b4cHc)"/>
+          <rect x="752" y="138" width="40" height="74" rx="3" fill="#FDF1EF"/>
+          <path d="M810 132 L820 132 L820 146 L810 146"/>
+          <path d="M680 214 L804 214"/>
+          <!-- outcomes -->
+          <path d="M340 246 L300 268" marker-end="url(#b4cAr)"/>
+          <path d="M540 246 L580 268" marker-end="url(#b4cAr)"/>
+          <rect x="140" y="272" width="220" height="36" rx="8" transform="rotate(-0.5 250 290)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="520" y="272" width="220" height="36" rx="8" transform="rotate(0.5 630 290)" fill="#FEF2F2" stroke="#FCA5A5"/>
+        </g>
+
+        <text class="b4cL" x="50" y="98">1 · funnel order</text>
+        <text class="b4cS" x="50" y="116">orders never pass clicks,</text>
+        <text class="b4cS" x="50" y="130">clicks never pass cards</text>
+        <text class="b4cL" x="256" y="98">2 · no gap minutes</text>
+        <text class="b4cS" x="256" y="116">every minute 0 to 59</text>
+        <text class="b4cS" x="256" y="130">has a row</text>
+        <text class="b4cR" x="330" y="198">17</text>
+        <text class="b4cS" x="256" y="224">a quiet minute is a zero</text>
+        <text class="b4cL" x="462" y="98">3 · one clock</text>
+        <text class="b4cS" x="462" y="116">every source in UTC,</text>
+        <text class="b4cS" x="462" y="130">minute 0 = room live</text>
+        <text class="b4cS" x="480" y="216">overlay</text>
+        <text class="b4cS" x="560" y="216">platform</text>
+        <text class="b4cL" x="668" y="98">4 · reconciles</text>
+        <text class="b4cS" x="668" y="116">within 2% of the platform's</text>
+        <text class="b4cS" x="668" y="130">end-of-stream totals</text>
+        <text class="b4cS" x="690" y="230">ours</text>
+        <text class="b4cS" x="752" y="230">platform</text>
+
+        <text class="b4cW" x="160" y="295">all four pass: scored</text>
+        <text class="b4cR" x="540" y="294">any one fails: rejected</text>
+
+        <text class="b4cN" x="30" y="330">A rejected stream is not scored with a footnote. It goes back to its owner with the failing check printed.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - check 2 looks for what is missing, which is the one thing the other three cannot see</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The four checks, and what each one catches<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Check</th><th>Rule</th><th>What it catches</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Funnel order</strong></td><td>Cumulative card impressions &gt;= clicks &gt;= add to cart &gt;= orders, at every minute</td><td>Swapped or mislabelled events, a click event double-firing</td></tr>
+            <tr><td><strong>2 · No gap minutes</strong></td><td>Every minute from 0 to the stream's last minute is present</td><td>A lost batch, an ingestion job that died for a minute</td></tr>
+            <tr><td><strong>3 · One clock</strong></td><td>Every timestamp in UTC; every minute between 0 and the last</td><td>A source still on local time, a stream whose minute 0 came from the wrong system</td></tr>
+            <tr><td><strong>4 · Reconciles</strong></td><td>Serai's counts within a tolerance of the platform's end-of-stream totals</td><td>Anything the first three missed that changes a total</td></tr>
+          </tbody>
+        </table>
+        <p>Check 1 is cumulative on purpose. Checked minute by minute, it would reject a perfectly good stream the first time a viewer clicked in minute 17 and ordered in minute 18. Cumulative, it asks the question that must always hold: by this minute, have we counted more orders than clicks?</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Choosing the tolerance, and why check 4 is not enough on its own<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The tolerance is a written choice, owned by data engineering, and it goes in the spec next to the clock. Too tight and every stream fails on the platform's own rounding; too loose and a lost minute slips through. The build-along uses 2 percent and shows the second failure happening: dropping one minute of a 60-minute stream moves room entries by 1.99 percent, inside the tolerance, and only orders cross it.</p>
+        <p>That is the argument for running all four. Reconciliation sees totals; it cannot see where in the stream the difference sits, and a gap in the minute the host lost the room is precisely the gap that matters. The gap check sees position; it cannot see a count that is wrong but present. Neither replaces the other.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Even the platform's totals carry a definition.</strong> Sea Limited's Annual Report on Form 20-F for fiscal 2019 defines Shopee's GMV as the value of orders on the marketplace, including shipping and other charges, and counts an order "regardless of whether the transaction is settled" or the item is returned. A listed marketplace chose that deliberately and wrote it down. Check 4 compares Serai's orders with a platform total, so the spec has to say which definition that total uses: placed or paid, with or without cancellations. Reconciling against a number whose definition you have not written is comparing two unknowns.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Write the spec, then test a stream against it</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Five short steps in plain Python with numpy and pandas. The stream is constructed with a fixed seed, <code>default_rng(4)</code>, so every output below is exactly what the code prints, run as one session in the order shown (numpy 1.26, pandas 2.1). Keep the seed and you will see the same numbers; the lesson is in the checks, not the counts.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 292" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline. Spec 1.0.0 with five events feeds an event log of 3,403 received events including 50 duplicates, which is de-duplicated into a minute table of 236 rows, which runs through the four checks. Three outcomes: the stream as generated passes all four and is scored, off the platform by 1.1 percent at most; the stream with minute 17 lost fails no gap minutes and reconciles, with orders 4.08 percent off; the stream with click and order swapped fails funnel order and reconciles, with orders 295.92 percent off.">
+        <defs>
+          <filter id="b4dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="83" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b4dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b4dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b4dH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b4dL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b4dS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b4dR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b4dW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b4dN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b4dH" x="30" y="26">SPEC, THEN TABLE, THEN GATE, THEN A VERDICT</text>
+        <text class="b4dS" x="360" y="26">constructed stream PL-0412, seed 4, as printed below</text>
+
+        <g filter="url(#b4dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="30" y="46" width="160" height="66" rx="8" transform="rotate(-0.6 110 79)" fill="#FDF1EF"/>
+          <rect x="226" y="46" width="180" height="66" rx="8" transform="rotate(0.5 316 79)" fill="url(#b4dHc)"/>
+          <rect x="442" y="46" width="170" height="66" rx="8" transform="rotate(-0.4 527 79)" fill="#FFFFFF"/>
+          <rect x="648" y="46" width="200" height="66" rx="8" transform="rotate(0.5 748 79)" fill="#FFFFFF"/>
+          <path d="M194 79 L220 79" marker-end="url(#b4dAr)"/>
+          <path d="M410 79 L436 79" marker-end="url(#b4dAr)"/>
+          <path d="M616 79 L642 79" marker-end="url(#b4dAr)"/>
+          <!-- three verdicts -->
+          <path d="M700 116 L170 160" marker-end="url(#b4dAr)"/>
+          <path d="M740 116 L450 160" marker-end="url(#b4dAr)"/>
+          <path d="M780 116 L730 160" marker-end="url(#b4dAr)"/>
+          <rect x="30" y="166" width="260" height="72" rx="8" transform="rotate(-0.5 160 202)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="310" y="166" width="260" height="72" rx="8" transform="rotate(0.5 440 202)" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <rect x="590" y="166" width="260" height="72" rx="8" transform="rotate(-0.4 720 202)" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <!-- doodle: a tick on the scored box -->
+          <path d="M258 186 L266 196 L280 178" stroke="#FFFFFF"/>
+        </g>
+
+        <text class="b4dL" x="44" y="72">spec 1.0.0</text>
+        <text class="b4dS" x="44" y="90">5 events, 6 fields each</text>
+        <text class="b4dL" x="240" y="72">event log</text>
+        <text class="b4dS" x="240" y="90">3,403 received, 50 duplicates</text>
+        <text class="b4dL" x="456" y="72">minute table</text>
+        <text class="b4dS" x="456" y="90">de-duplicated, 236 rows</text>
+        <text class="b4dL" x="662" y="72">four checks</text>
+        <text class="b4dS" x="662" y="90">funnel, gaps, clock, reconcile</text>
+
+        <text class="b4dW" x="46" y="192">as generated: scored</text>
+        <text class="b4dW" x="46" y="214">4 of 4 pass; off by 1.1% at most</text>
+        <text class="b4dR" x="326" y="192">minute 17 lost: rejected</text>
+        <text class="b4dS" x="326" y="212">fails no gap minutes, reconciles</text>
+        <text class="b4dS" x="326" y="228">orders off by 4.08%</text>
+        <text class="b4dR" x="606" y="192">click and order swapped: rejected</text>
+        <text class="b4dS" x="606" y="212">fails funnel order, reconciles</text>
+        <text class="b4dS" x="606" y="228">orders off by 295.92%</text>
+
+        <text class="b4dN" x="30" y="276">Constructed. Losing minute 17 moved room entries by 1.99%, inside the 2% tolerance; the gap check still caught it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - two broken streams, two different checks failing, and each one says why</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Write the spec as data.</strong> A Python dict, one entry per event, the six fields from Part 1 on each, plus the clock as its own owned field. In production this is a YAML file in a repo with owners on the review list; the shape is identical. Everything after this step reads <code>SPEC</code>, never its own copy of the event names.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · the spec, version 1.0.0</span>SPEC_VERSION = "1.0.0"
+SPEC = {
+  "room_entry":      {"definition": "a viewer's player joins the room", "grain": ["stream_id", "minute"],
+                      "source": "platform, per-minute totals", "owner": "tech", "first_seen": "1.0.0"},
+  "card_impression": {"definition": "a product card is on screen for 1 second or more", "grain": ["stream_id", "minute", "sku"],
+                      "source": "Serai overlay", "owner": "tech", "first_seen": "1.0.0"},
+  "product_click":   {"definition": "a viewer taps the product card", "grain": ["stream_id", "minute", "sku"],
+                      "source": "Serai overlay", "owner": "tech", "first_seen": "1.0.0"},
+  "add_to_cart":     {"definition": "the product lands in a cart from the room", "grain": ["stream_id", "minute", "sku"],
+                      "source": "platform, per-minute totals", "owner": "data eng", "first_seen": "1.0.0"},
+  "order":           {"definition": "an order placed, in its placed minute; cancels leave", "grain": ["stream_id", "minute", "sku"],
+                      "source": "platform order API", "owner": "data eng", "first_seen": "1.0.0"},
+}
+CLOCK = {"tz": "UTC", "minute_0": "the minute the platform marks the room live", "owner": "data eng"}
+FUNNEL = ["card_impression", "product_click", "add_to_cart", "order"]
+print(len(SPEC), "events, spec", SPEC_VERSION, "| clock", CLOCK["tz"], "owned by", CLOCK["owner"])
+# 5 events, spec 1.0.0 | clock UTC owned by data eng</div>
+      </div>
+      <div class="step">
+        <p><strong>Generate one constructed 60-minute stream as raw events.</strong> Three SKUs, one featured per 20 minutes, a room that ramps up and slowly fades. Every event gets an id at the moment it fires, and 1.5 percent of events are sent twice, the way retries arrive. Room entries sit on <code>sku = "ALL"</code> because their grain is the room.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · one stream, constructed</span>import numpy as np, pandas as pd
+rng = np.random.default_rng(4)
+START = pd.Timestamp("2026-06-12 12:00:00", tz="UTC")
+SKUS = ["SKU-A", "SKU-B", "SKU-C"]
+rows = []
+for m in range(60):
+    shape = min(1, (m + 1) / 6) * (1 - m / 90)          # ramp up, slow fade
+    featured = SKUS[m // 20]                            # one hero product per 20 minutes
+    rows += [("room_entry", m, "ALL")] * rng.poisson(40 * shape)
+    for sku in SKUS:
+        imp = rng.poisson(30 * shape if sku == featured else 3)
+        clk = rng.binomial(imp, 0.12)
+        cart = rng.binomial(clk, 0.45)
+        order = rng.binomial(cart, 0.5)
+        for ev, n in zip(FUNNEL, [imp, clk, cart, order]):
+            rows += [(ev, m, sku)] * n
+log = pd.DataFrame(rows, columns=["event", "m", "sku"])
+log["ts"] = START + pd.to_timedelta(log["m"] * 60 + rng.uniform(0, 60, len(log)), unit="s")
+log["event_id"] = [f"e{i:05d}" for i in range(len(log))]
+log["stream_id"] = "PL-0412"
+# retries: the same event, sent twice
+resent = log.sample(frac=0.015, random_state=4)
+raw = pd.concat([log, resent]).drop(columns="m")
+print(len(raw), "events received,", raw["event_id"].duplicated().sum(), "duplicates")
+# 3403 events received, 50 duplicates</div>
+      </div>
+      <div class="step">
+        <p><strong>Build the minute table: de-duplicate on the idempotency key, put every event on the one clock, count at the grain.</strong> The columns come from <code>SPEC</code>, in the spec's order, so an event missing from the log still appears as a column of zeros instead of silently vanishing.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · the minute table</span>def minute_table(raw, start=START):
+    ev = raw.drop_duplicates("event_id")                       # idempotency key
+    ev = ev.assign(minute=((ev["ts"] - start).dt.total_seconds() // 60).astype(int))
+    t = ev.pivot_table(index=["stream_id", "minute", "sku"], columns="event",
+                       values="event_id", aggfunc="count", fill_value=0)
+    return t.reindex(columns=list(SPEC), fill_value=0).reset_index(), ev
+mt, ev = minute_table(raw)
+print(mt.shape, "rows x cols")
+print(mt.groupby("minute")[list(SPEC)].sum().iloc[:4].to_string())
+print("totals:", mt[list(SPEC)].sum().to_dict())
+# (236, 8) rows x cols
+# event   room_entry  card_impression  product_click  add_to_cart  order
+# minute
+# 0                7               15              1            1      1
+# 1               14               15              6            3      1
+# 2               18               23              3            2      2
+# 3               29               24              2            1      1
+# totals: {'room_entry': 1507, 'card_impression': 1511, 'product_click': 194, 'add_to_cart': 92, 'order': 49}</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the gate and run it.</strong> The platform's end-of-stream totals are constructed here as the true counts nudged by a small random error, because a real platform's totals never match yours to the unit. Four checks, one verdict, and the evidence printed with it: the gap list and how far each total is from the platform's.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · four checks, one verdict</span># the platform's own end-of-stream totals, constructed: close to ours, not identical
+truth = mt[list(SPEC)].sum()
+PLATFORM = {k: int(round(truth[k] * (1 + rng.normal(0, 0.006)))) for k in ["room_entry", "add_to_cart", "order"]}
+
+def validate(mt, ev, duration=60, tol=0.02):
+    per_min = mt.groupby("minute")[list(SPEC)].sum()
+    cum = per_min[FUNNEL].cumsum()
+    funnel = all((cum[a] &gt;= cum[b]).all() for a, b in zip(FUNNEL, FUNNEL[1:]))
+    gaps = sorted(set(range(duration)) - set(per_min.index))
+    clock = str(ev["ts"].dt.tz) == CLOCK["tz"] and ev["minute"].between(0, duration - 1).all()
+    ours = per_min.sum()
+    recon = {k: round(abs(ours[k] - v) / v, 4) for k, v in PLATFORM.items()}
+    res = {"funnel order": funnel, "no gap minutes": not gaps, "one clock": clock,
+           "reconciles": all(d &lt;= tol for d in recon.values())}
+    for k, ok in res.items():
+        print(f"{'PASS' if ok else 'FAIL'}  {k}")
+    print("  gaps:", gaps, "| off platform by:", recon)
+    return "scored" if all(res.values()) else "rejected"
+
+print("platform totals:", PLATFORM)
+print(validate(mt, ev))
+# platform totals: {'room_entry': 1511, 'add_to_cart': 91, 'order': 49}
+# PASS  funnel order
+# PASS  no gap minutes
+# PASS  one clock
+# PASS  reconciles
+#   gaps: [] | off platform by: {'room_entry': 0.0026, 'add_to_cart': 0.011, 'order': 0.0}
+# scored</div>
+      </div>
+      <div class="step">
+        <p><strong>Break it twice, on purpose.</strong> A gate you have only ever seen pass is a gate you have not tested. First, lose minute 17, the way a dead ingestion job would. Second, swap two event names, the way a careless overlay release would. Each break should fail a different check, and say which.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · two broken streams</span># break 1: the pipeline loses minute 17
+lost = raw[((raw["ts"] - START).dt.total_seconds() // 60) != 17]
+print(validate(*minute_table(lost)))
+# break 2: an overlay release maps click and order to each other's names
+swap = raw.assign(event=raw["event"].replace({"product_click": "order", "order": "product_click"}))
+print(validate(*minute_table(swap)))
+# PASS  funnel order
+# FAIL  no gap minutes
+# PASS  one clock
+# FAIL  reconciles
+#   gaps: [17] | off platform by: {'room_entry': 0.0199, 'add_to_cart': 0.011, 'order': 0.0408}
+# rejected
+# FAIL  funnel order
+# PASS  no gap minutes
+# PASS  one clock
+# FAIL  reconciles
+#   gaps: [] | off platform by: {'room_entry': 0.0026, 'add_to_cart': 0.011, 'order': 2.9592}
+# rejected</div>
+        <p>Read the first break carefully. Room entries moved by 0.0199 against the platform, under the 0.02 tolerance: on entries alone, reconciliation would have waved the stream through. Orders crossed it at 0.0408, and the gap check named the minute. The swap is louder: 194 clicks relabelled as orders is 2.96 times the platform's 49, and the funnel check fails before reconciliation even gets a say.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Keep the gate next to the spec, and import both.</strong> Session 5 computes Stop, Hold, Love, Buy only on streams whose verdict is "scored", and it reads the event names from the same <code>SPEC</code>. A second list of event names in a notebook is the rename from Part 2 waiting to happen.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 5</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Write the spec for one event stream you work with, live or not: five events or fewer, all six fields on each, and one clock with an owner. Mark every event as owned, full via API or partial.</li>
+      <li>Draw the contract sheet for it: events down the side, teams across the top, one owner per row. Find the field everyone reads and nobody owns. Most teams have one.</li>
+      <li>Add a third break to step 5: put one source on local time, UTC+8, and check which of the four checks fails. If none does, change the clock check until it would.</li>
+      <li>Rerun step 4 with a tolerance of 0.01 and then 0.05. Write one sentence on which you would put in the spec, and who should sign it.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 4 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Live card impressions, the times the stream's cover appeared in a feed, reach Serai only as one platform total per stream. What does that mean for the spec?</p>
+      <button class="qopt" type="button">A · Leave them out of the spec, since Serai cannot fire them</button>
+      <button class="qopt" type="button">B · Estimate them per minute from room entries and treat the estimate as owned</button>
+      <button class="qopt" type="button">C · Write the source as platform totals only, so everyone knows they can be reconciled against but not re-counted or de-duplicated</button>
+      <button class="qopt" type="button">D · Ask tech to log them from the overlay instead</button>
+      <p class="qwhy">The source field decides the fix. An owned event can be re-counted from raw; a platform total can only be compared with. Writing that down stops a team from "correcting" a number nobody at Serai can see behind.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · An overlay release renames <code>product_click</code> to <code>card_tap</code>. Nothing else changes. How should the spec treat it?</p>
+      <button class="qopt" type="button">A · As a MAJOR version: every reader's queries filter on the old name, so it needs every owner's sign-off, a date and a period with both names emitted</button>
+      <button class="qopt" type="button">B · As a PATCH, since the definition is the same</button>
+      <button class="qopt" type="button">C · As a MINOR version, since a new event name has been added</button>
+      <button class="qopt" type="button">D · No version change; tech owns the event and can name it as it likes</button>
+      <p class="qwhy">The definition did not move, but every query that reads the event did. To the other seven teams a renamed event is a removed one, which is exactly how Pasar Live's click rate read zero for two days in the constructed case.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">3 · With minute 17 lost, room entries were 1.99 percent off the platform's total, inside the 2 percent tolerance. What does that show?</p>
+      <button class="qopt" type="button">A · The tolerance should be 1 percent</button>
+      <button class="qopt" type="button">B · Room entries are not worth reconciling</button>
+      <button class="qopt" type="button">C · The stream should have been scored, since most totals were fine</button>
+      <button class="qopt" type="button">D · Reconciliation sees totals, not position, so a gap check is needed alongside it; one missing minute can hide inside any sensible tolerance</button>
+      <p class="qwhy">Each check sees something the others cannot. Reconciliation tells you a total is off; only the gap check tells you which minute is missing, and the missing minute may be the one where the host lost the room.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The per-minute event spec</span><span class="note">Constructed for Pasar Live: five events, keyed stream_id + minute + sku, one UTC clock with minute 0 at room live, six fields per event</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Ownership and change control</span><span class="note">Practice: one owner per field across the eight teams, versioning MAJOR.MINOR.PATCH, a definition of done for tracking work; the owner grid is constructed</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Validation checks before scoring</span><span class="note">Practice, computed on a constructed stream with default_rng(4): funnel order, no gap minutes, one clock, reconciliation within a tolerance; every printed output was run</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Platform totals carry a definition</span><span class="note">Sea Limited, Annual Report on Form 20-F for the fiscal year 2019, "Conventions" definitions: GMV includes shipping; orders counted whether or not settled</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Minute-table mechanics and livestream methods</span><span class="note">Owned by the live commerce analytics course, linked from Part 1, not taught here</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Five events</b><span>Room entry, card impression, click, add to cart, order. Keyed stream_id + minute + sku.</span></div>
+      <div class="cheat-item"><b>One clock</b><span>UTC, minute 0 = the room goes live. It is a field, and it needs an owner.</span></div>
+      <div class="cheat-item"><b>Six fields</b><span>Name, definition, grain, source, owner, first-seen version. On every event.</span></div>
+      <div class="cheat-item"><b>A rename is MAJOR</b><span>To every reader it is a removal. Sign-off, a date, both names for a while.</span></div>
+      <div class="cheat-item"><b>Dedupe on the id</b><span>The idempotency key, never the timestamp. Late events land in their own minute.</span></div>
+      <div class="cheat-item"><b>Four checks, then score</b><span>Funnel order, no gaps, one clock, reconciles. Fail one: rejected, with the reason.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>You have a spec, a minute table and a gate. Session 5 takes the streams that pass it, eight constructed Pasar Live streams across two host types, and writes Stop, Hold, Love, Buy and the North Star as code, with the denominator of every stage stated and why platform hosts win on GMV while brand hosts win on the North Star.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 4 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b3-the-identity-gate.html">← Prev: The identity gate</a> &nbsp;·&nbsp; <a href="b5-stop-hold-love-buy.html">Next: Stop, Hold, Love, Buy as code →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

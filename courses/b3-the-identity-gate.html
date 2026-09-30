@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Analyst session 3 of 8. Score join keys the honest way, as pairs against a hidden truth. Under marketplace masking no key combination lifts customer grain past 0.2329, while Serai's own store and SKU ids clear the 90 percent gate. Python on the bench's real Olist sample.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The identity gate - learn ship ecommerce enabler with phoebe">
+<meta property="og:description" content="Analyst session 3 of 8. A join key is a claim about pairs. Count P, T and TP, watch masking turn the buyer into fragments, and see which grains an enabler can actually join.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/courses/b3-the-identity-gate.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The identity gate - learn ship ecommerce enabler with phoebe">
+<meta name="twitter:description" content="Analyst session 3 of 8. Pair scoring, masked fragments, and why store grain holds while customer grain stops at 0.2329.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Analyst session 3 · The identity gate - learn ship ecommerce enabler with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=2">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-ship-ecommerce-enabler-with-phoebe</a> / Analyst session 3 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Ship It: Social Commerce Enablers · Analyst session 3 of 8</div>
+    <h1>The <span class="accent">identity gate</span></h1>
+    <p class="sub">Every use case on an enabler's roadmap quietly assumes a join: this order to that customer, this listing to that SKU, this store to that brand. Whether the join exists is not a matter of opinion, and it is not a matter of how clever the matching is. It is a count. Tonight you learn to score a join key as a claim about pairs, watch the marketplaces' masking break the buyer into fragments that either collide or go silent, and see why Serai's own store and SKU ids pass a gate the buyer never will. Then you write the scorer yourself in Python and run it on the same real Olist orders the bench uses.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Analysts and analytics engineers</span>
+      <span class="chip audience">Python, pandas</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-19 · Pairs, masking, grain</span>
+      <span class="a3" style="flex:5">19-41 · Build-along: score the keys</span>
+      <span class="a4" style="flex:1">41-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits on the track</h2>
+    </div>
+    <p class="lede">Session 1 marked the buyer domain as the least obtainable row on the estate map. Session 2 conformed three marketplace exports into one schema, and each export kept a different slice of the buyer. Tonight measures what those slices are worth as join keys, at three grains: the customer, the store and the SKU. The rows are real Olist orders and the people who placed them are real (anonymised by Olist); the three-export split, the synthetic names and phones, and every export's masking are constructed, modelled on what integrators publicly report. Session 8's bench runs the same ladder in your browser; tonight you rebuild it in about sixty lines.</p>
+
+    <div class="legend">
+      <span class="pill">🎫 Clear all three quiz questions to stamp your passport</span>
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">★ Build-along = run the code yourself</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A pair scorer in plain Python that counts predicted, true and correct pairs without ever building a pair, the true match rate that punishes both missed and invented links, a measured answer to "can we build a single customer view" (no: the best of 127 key combinations reaches 0.2329), and the habit of scoring a join before anyone builds on it.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers scoring a join key as pairs</span>
+      <h2>A join key is a claim about pairs</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">When you join on a key you are claiming that every two rows sharing its value belong to the same thing. So the unit of scoring is not the row, it is the pair. Count the pairs the key claims, the pairs that are really true, and the pairs on both lists, and three numbers tell you everything a key is worth.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 368" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn toy example. Six order cards in a row belong to three customers: orders 1, 2 and 3 to customer X, orders 4 and 5 to customer Y, order 6 to customer Z. Teal arcs above the cards join the four true pairs. Dashed coral arcs below join the four pairs a key claims: orders 1 and 2, and every pair among orders 3, 4 and 6. Only orders 1 and 2 appear on both sides, so TP is 1, recall and precision are both one in four, and the true match rate is 1 over 4 plus 4 minus 1, about 0.14.">
+        <defs>
+          <filter id="b3aSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b3aHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b3aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b3aH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b3aL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b3aS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b3aB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b3aA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b3aV { font: 800 16px Inter, sans-serif; fill: #8A2330; }
+          .b3aW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b3aN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b3aH" x="30" y="26">SIX ORDERS, THREE CUSTOMERS, ONE KEY (A TOY)</text>
+        <text class="b3aB" x="30" y="58">above: true pairs, same customer · T = 4</text>
+
+        <g filter="url(#b3aSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- six order cards -->
+          <rect x="40" y="150" width="110" height="50" rx="8" transform="rotate(-1.5 95 175)" fill="#FFFFFF"/>
+          <rect x="175" y="150" width="110" height="50" rx="8" transform="rotate(1.2 230 175)" fill="#FFFFFF"/>
+          <rect x="310" y="150" width="110" height="50" rx="8" transform="rotate(-0.8 365 175)" fill="#FFFFFF"/>
+          <rect x="445" y="150" width="110" height="50" rx="8" transform="rotate(1.6 500 175)" fill="#FDF1EF"/>
+          <rect x="580" y="150" width="110" height="50" rx="8" transform="rotate(-1.2 635 175)" fill="#FDF1EF"/>
+          <rect x="715" y="150" width="110" height="50" rx="8" transform="rotate(0.9 770 175)" fill="url(#b3aHc)"/>
+          <!-- true pairs, above -->
+          <path d="M95 146 Q162 106 230 146" stroke="#0E6F68"/>
+          <path d="M230 146 Q297 106 365 146" stroke="#0E6F68"/>
+          <path d="M95 146 Q230 66 365 146" stroke="#0E6F68"/>
+          <path d="M500 146 Q567 106 635 146" stroke="#0E6F68"/>
+          <!-- pairs the key claims, below -->
+          <path d="M95 204 Q162 244 230 204" stroke="#BE3745" stroke-dasharray="6 5"/>
+          <path d="M365 204 Q432 244 500 204" stroke="#BE3745" stroke-dasharray="6 5"/>
+          <path d="M500 204 Q635 264 770 204" stroke="#BE3745" stroke-dasharray="6 5"/>
+          <path d="M365 204 Q567 304 770 204" stroke="#BE3745" stroke-dasharray="6 5"/>
+          <!-- the one correct pair -->
+          <rect x="142" y="213" width="40" height="20" rx="6" fill="#0E6F68" stroke="#0E6F68"/>
+          <!-- key doodle -->
+          <circle cx="742" cy="54" r="9"/>
+          <path d="M751 54 L790 54 M778 54 L778 62 M786 54 L786 60"/>
+        </g>
+
+        <text class="b3aW" x="150" y="227">TP</text>
+
+        <text class="b3aL" x="56" y="172">order 1</text>
+        <text class="b3aS" x="56" y="189">customer X</text>
+        <text class="b3aL" x="191" y="172">order 2</text>
+        <text class="b3aS" x="191" y="189">customer X</text>
+        <text class="b3aL" x="326" y="172">order 3</text>
+        <text class="b3aS" x="326" y="189">customer X</text>
+        <text class="b3aL" x="461" y="172">order 4</text>
+        <text class="b3aS" x="461" y="189">customer Y</text>
+        <text class="b3aL" x="596" y="172">order 5</text>
+        <text class="b3aS" x="596" y="189">customer Y</text>
+        <text class="b3aL" x="731" y="172">order 6</text>
+        <text class="b3aS" x="731" y="189">customer Z</text>
+
+        <text class="b3aA" x="30" y="290">below: pairs the key claims, same key value · P = 4</text>
+
+        <text class="b3aL" x="30" y="318">TP = 1</text>
+        <text class="b3aS" x="84" y="318">only orders 1 and 2 sit on both sides</text>
+        <text class="b3aL" x="330" y="318">recall 1 / 4 · precision 1 / 4</text>
+        <text class="b3aV" x="580" y="319">rate 1 / (4 + 4 - 1) = 0.14</text>
+
+        <text class="b3aN" x="30" y="352">Score the lines, not the dots: a key is judged on which pairs it draws, and on which it leaves out.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the denominator counts every pair on either side once, so both a miss and a false link cost you</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Three counts: P, T and TP<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Hide the truth in a column the key never sees: for customer grain, which real person placed each order. Then three counts:</p>
+        <table class="clean">
+          <thead><tr><th>Count</th><th>What it is</th><th>In the toy</th></tr></thead>
+          <tbody>
+            <tr><td><strong>P</strong>, predicted</td><td>Pairs of rows that share every chosen key value</td><td>4</td></tr>
+            <tr><td><strong>T</strong>, true</td><td>Pairs of rows that share the hidden truth</td><td>4</td></tr>
+            <tr><td><strong>TP</strong>, correct</td><td>Pairs on both lists</td><td>1</td></tr>
+          </tbody>
+        </table>
+        <p>From them, <strong>recall = TP / T</strong> (how many real links the key finds), <strong>precision = TP / P</strong> (how many of its links are real), and <strong>true match rate = TP / (P + T - TP)</strong>. A row whose export left a chosen field empty links to nothing: it adds no predicted pairs, and its true pairs count as missed. That rule is what makes a masked field visible in the score.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why the union in the denominator<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>P + T - TP is the number of distinct pairs on either list: the union of the two pair sets. TP over that union is the Jaccard index of the claimed pairs and the true pairs. It is 1 only when the key draws exactly the true lines, no more and no fewer.</p>
+        <p>That is why one number is enough. A key that links everything finds every true pair, recall 100 percent, and drowns them: on the bench, the masked name alone claims 2,371,086 pairs to find 339 true ones, a rate of 0.0001. A key that links nothing has TP = 0 and scores 0. Recall rewards the first, precision rewards the second, and the union punishes both. If someone quotes you a match rate as a recall, ask for P.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>How to count pairs without making them<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>8,614 orders make 37,096,191 possible pairs. You never need to list them. Group the rows by key value: a group of n rows holds n choose 2 = n(n-1)/2 pairs, so <strong>P is the sum of n choose 2 over key groups</strong>. The same over truth groups gives <strong>T</strong>.</p>
+        <p>For <strong>TP</strong>, group by the key value and the truth together, the cells of a contingency table of key against truth. Two rows are a correct pair exactly when they share both, so TP is the sum of n choose 2 over those cells. Three <code>Counter</code>s and three sums, linear in the rows, exact to the pair. The build-along writes it; the <a href="https://phoebefu6.github.io/learn-entity-resolution-with-phoebe/courses/01-no-shared-key.html">entity resolution course's first session</a> shows why comparing every pair stops being an option long before Serai's scale.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Most pairs are between strangers.</strong> In the public Olist dataset, 93,358 customers placed 96,478 delivered orders, and only 2,801 of them bought twice or more: a 3.0 percent repeat rate. At that base rate almost every pair of orders belongs to two different people, so a key that groups loosely manufactures false pairs far faster than it finds true ones. The bench's sample keeps that real ratio on purpose (250 repeat customers against 8,083 one-time customers), because the base rate is what decides how bad a weak key looks.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers what masking leaves as a join key</span>
+      <h2>Masking turns identity into fragments</h2>
+      <span class="tag concept">6 min live</span>
+    </div>
+    <p class="lede">The marketplaces do not hand an enabler the buyer. They hand it fragments: a first and last letter, a couple of digits, sometimes an address, sometimes not, and a different mix on each platform. Each fragment either collides, because thousands of buyers share it, or goes silent, because the export dropped it. Stacking fragments trades one failure for the other, and the ladder stops well below any gate.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn ladder of key combinations at customer grain, bars on a scale from 0 to 0.25. Best of 127, masked name plus masked phone plus store id: 0.2329, recall 29.2 percent, precision 53.5 percent. Masked name plus phone plus city and zip: 0.1917, recall 19.2 percent, precision 100 percent. Masked name plus masked phone: 0.0142, recall 100 percent, 23,928 predicted pairs. Masked phone: 0.0009, recall 100 percent, 371,023 pairs. Masked name: 0.0001, recall 100 percent, 2,371,086 pairs. Hashed phone: 0 predicted pairs. The gate at 0.90 is off the chart.">
+        <defs>
+          <filter id="b3bSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b3bHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b3bH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b3bL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b3bS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b3bB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b3bA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b3bV { font: 800 16px Inter, sans-serif; fill: #8A2330; }
+          .b3bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b3bN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b3bH" x="30" y="26">THE CUSTOMER-GRAIN LADDER, 339 TRUE PAIRS</text>
+        <text class="b3bS" x="370" y="26">axis stops at 0.25; the 0.90 gate is far off the right edge</text>
+
+        <g filter="url(#b3bSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- ladder rails -->
+          <path d="M262 44 L262 342"/>
+          <path d="M846 44 L846 342"/>
+          <!-- rungs -->
+          <path d="M262 74 L846 74" stroke="#E2CDCB"/>
+          <path d="M262 122 L846 122" stroke="#E2CDCB"/>
+          <path d="M262 170 L846 170" stroke="#E2CDCB"/>
+          <path d="M262 218 L846 218" stroke="#E2CDCB"/>
+          <path d="M262 266 L846 266" stroke="#E2CDCB"/>
+          <path d="M262 314 L846 314" stroke="#E2CDCB"/>
+          <!-- bars, 2000 px per unit of rate -->
+          <rect x="270" y="64" width="466" height="20" rx="4" transform="rotate(-0.4 503 74)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="270" y="112" width="383" height="20" rx="4" transform="rotate(0.4 461 122)" fill="url(#b3bHc)"/>
+          <rect x="270" y="160" width="28" height="20" rx="3" transform="rotate(-1 284 170)" fill="#FDF1EF"/>
+          <rect x="270" y="208" width="3" height="20" fill="#FDF1EF"/>
+          <rect x="270" y="256" width="2" height="20" fill="#FDF1EF"/>
+          <!-- axis -->
+          <path d="M270 350 L770 350"/>
+          <path d="M270 346 L270 354 M370 346 L370 354 M470 346 L470 354 M570 346 L570 354 M670 346 L670 354 M770 346 L770 354"/>
+        </g>
+
+        <text class="b3bL" x="30" y="72">name + phone + store id</text>
+        <text class="b3bB" x="30" y="88">best of 127 · precision 53.5%</text>
+        <text class="b3bV" x="746" y="80">0.2329</text>
+
+        <text class="b3bL" x="30" y="120">name + phone + city + zip</text>
+        <text class="b3bS" x="30" y="136">recall 19.2% · precision 100%</text>
+        <text class="b3bV" x="663" y="128">0.1917</text>
+
+        <text class="b3bL" x="30" y="168">masked name + masked phone</text>
+        <text class="b3bS" x="30" y="184">100% recall · 23,928 pairs</text>
+        <text class="b3bV" x="308" y="176">0.0142</text>
+
+        <text class="b3bL" x="30" y="216">masked phone</text>
+        <text class="b3bS" x="30" y="232">100% recall · 371,023 pairs</text>
+        <text class="b3bV" x="284" y="224">0.0009</text>
+
+        <text class="b3bL" x="30" y="264">masked name</text>
+        <text class="b3bS" x="30" y="280">100% recall · 2,371,086 pairs</text>
+        <text class="b3bV" x="284" y="272">0.0001</text>
+
+        <text class="b3bL" x="30" y="312">hashed phone</text>
+        <text class="b3bS" x="30" y="328">265 raw phones, 0 pairs</text>
+        <text class="b3bR" x="284" y="318">0 predicted pairs · silent</text>
+
+        <text class="b3bA" x="266" y="370">0</text>
+        <text class="b3bA" x="358" y="370">0.05</text>
+        <text class="b3bA" x="458" y="370">0.10</text>
+        <text class="b3bA" x="558" y="370">0.15</text>
+        <text class="b3bA" x="658" y="370">0.20</text>
+        <text class="b3bA" x="758" y="370">0.25</text>
+
+        <text class="b3bN" x="30" y="394">Single fragments collide, stacked fragments go quiet, and the best of 127 combinations stops at 0.2329.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - read the bottom four rungs by their pair counts: recall is perfect and the key is useless</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Collide or go silent<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The bench's masking is constructed, modelled on the reported patterns: every export shows the name as its first letter, three stars and its last letter, and the last two digits of the phone. Platform A keeps zip and city; Platform B keeps neither; Platform C keeps the phone and the address only on seller-shipped orders. Scored at customer grain on 8,614 orders with 339 true pairs:</p>
+        <table class="clean">
+          <thead><tr><th>Key</th><th>Rate</th><th>Recall</th><th>Predicted pairs</th><th>What happened</th></tr></thead>
+          <tbody>
+            <tr><td>masked name</td><td>0.0001</td><td>100%</td><td>2,371,086</td><td>63 masks for 8,333 people: collides</td></tr>
+            <tr><td>masked phone</td><td>0.0009</td><td>100%</td><td>371,023</td><td>100 possible values: collides</td></tr>
+            <tr><td>name + phone</td><td>0.0142</td><td>100%</td><td>23,928</td><td>still colliding, about 70 claimed pairs per true one</td></tr>
+            <tr><td>name + phone + city + zip</td><td>0.1917</td><td>19.2%</td><td>65</td><td>never wrong, silent wherever the address was dropped</td></tr>
+            <tr><td><strong>name + phone + store id</strong></td><td><strong>0.2329</strong></td><td>29.2%</td><td>185</td><td>best of 127; precision 53.5%</td></tr>
+          </tbody>
+        </table>
+        <p>Every rung trades one failure for the other. Fragments that appear on every export collide; the fragment that disambiguates, the address, exists on too few rows to find most repeat buyers. There is no combination in between that does both, and the search over all 127 subsets of the seven keys proves it rather than asserting it.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>A hash needs the raw value<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The standard suggestion is to hash the phone and join on the hash. On the bench, the hashed phone links nothing: 0 predicted pairs. Only the 265 seller-shipped Platform C orders carried a raw phone to hash, and no two of those 265 orders were the same person.</p>
+        <p>A hash is a way of keeping a raw value private while still comparing it, and it can only exist where the raw value arrived. Hashing the masked fragment gives you the fragment again, with its collisions. So the question for any hashed-identity proposal is not the algorithm, it is: on how many rows, from which exports, do we receive the raw value today? That is an obtainability question, and session 1's scale already answered it: closed on platform-shipped orders.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The sample flatters fragments: treat 23.3 percent as a ceiling<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The bench scores 8,614 orders. Serai's real estate would hold many times that. True pairs grow roughly with the number of rows (each new repeat buyer adds a few), but false pairs from a colliding key grow with the square of the rows: double the orders and every masked-name group doubles, so its pairs roughly quadruple. P grows faster than TP, and every fragment rung sinks as the data grows.</p>
+        <p>So read 0.2329 as a ceiling measured on a small, friendly sample, not an estimate of what a production join would reach. The direction is certain; the size at Serai's scale is not measured here, and nothing on this page claims it.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Three marketplaces, three different slices of the buyer.</strong> Integrators' public notes report that all three marketplaces mask the buyer's name and phone on orders they fulfil, and that each keeps a different amount of the address; seller-delivered orders are the exception. Shopee is reported to remove buyer names and phone numbers while leaving the address for order matching (Easy Shopee &amp; Lazada help centre, 2022). Lazada is reported to mask name, address and phone in its seller centre and exports from 12 January 2026 and in its Open Platform API from 1 July 2026, with full details kept on delivered-by-seller orders (BigSeller; Zetpy, June 2026). TikTok Shop is reported to desensitise recipient name and phone when its own logistics ship the order (openlinker-project, GitHub issue 2882). All three are reported, not read at source, and the rules have changed twice in 2026 alone: re-check before you build on any of them.</p>
+    </div>
+  </section>
+
+  <section class="section" id="part-3">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers which grains an enabler can join</span>
+      <h2>Grain decides what can be joined</h2>
+      <span class="tag concept">4 min live</span>
+    </div>
+    <p class="lede">The buyer is not Serai's to key, but the store and the SKU are. Run the same scorer with the truth set to the store or the SKU behind each order line, and the picture flips: the keys are Serai's own ids, and they clear a 90 percent gate with room to spare. The gate is not about matching skill. It is about who owns the key.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 366" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three hand-drawn gauges on a scale from 0 to 1 with a dashed gate line at 0.90. Customer grain, best key masked name plus phone plus store id: 0.2329, below the gate. Store grain, store id: 1.0000, past the gate. SKU grain, SKU: 0.9748, past the gate, 17,033 of 17,474 true pairs, the gap being 219 lines on listings missing from the mapping table. Thin ghost bars under each show the scores after the hidden ids are shuffled with seed 7: 0.0000, 0.0037 and 0.0004.">
+        <defs>
+          <filter id="b3cSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="47" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b3cHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <style>
+          .b3cH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b3cL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b3cS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b3cB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b3cA { font: 700 11px Inter, sans-serif; fill: #BE3745; }
+          .b3cV { font: 800 16px Inter, sans-serif; fill: #8A2330; }
+          .b3cR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b3cN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b3cH" x="30" y="26">THREE GRAINS AGAINST THE GATE</text>
+        <text class="b3cA" x="700" y="46">gate 0.90</text>
+
+        <g filter="url(#b3cSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- gate line at 0.90 -->
+          <path d="M726 54 L726 300" stroke="#BE3745" stroke-dasharray="7 6"/>
+          <!-- customer -->
+          <rect x="240" y="66" width="126" height="22" rx="4" transform="rotate(-0.6 303 77)" fill="#FEF2F2" stroke="#FCA5A5"/>
+          <rect x="240" y="94" width="2" height="10" stroke="#E2CDCB"/>
+          <!-- store -->
+          <rect x="240" y="156" width="540" height="22" rx="4" transform="rotate(0.3 510 167)" fill="#0E6F68" stroke="#0E6F68"/>
+          <rect x="240" y="184" width="3" height="10" stroke="#E2CDCB"/>
+          <!-- sku -->
+          <rect x="240" y="246" width="526" height="22" rx="4" transform="rotate(-0.3 503 257)" fill="url(#b3cHc)"/>
+          <rect x="240" y="274" width="2" height="10" stroke="#E2CDCB"/>
+          <!-- axis -->
+          <path d="M240 310 L780 310"/>
+          <path d="M240 306 L240 314 M510 306 L510 314 M780 306 L780 314"/>
+          <!-- key doodle by the store row -->
+          <circle cx="812" cy="200" r="8" stroke="#0E6F68"/>
+          <path d="M820 200 L852 200 M842 200 L842 207 M849 200 L849 205" stroke="#0E6F68"/>
+        </g>
+
+        <text class="b3cL" x="30" y="76">customer grain</text>
+        <text class="b3cS" x="30" y="92">best: name + phone + store</text>
+        <text class="b3cR" x="30" y="108">below the gate</text>
+        <text class="b3cV" x="376" y="83">0.2329</text>
+        <text class="b3cS" x="252" y="103">shuffled ids: 0.0000</text>
+
+        <text class="b3cL" x="30" y="166">store grain</text>
+        <text class="b3cB" x="30" y="182">key: store id, Serai's own</text>
+        <text class="b3cS" x="30" y="198">186,387 of 186,387 pairs</text>
+        <text class="b3cV" x="790" y="173">1.0000</text>
+        <text class="b3cS" x="252" y="193">shuffled ids: 0.0037</text>
+
+        <text class="b3cL" x="30" y="256">SKU grain</text>
+        <text class="b3cS" x="30" y="272">key: SKU · 17,033 of 17,474</text>
+        <text class="b3cS" x="30" y="288">gap: 219 unmapped lines</text>
+        <text class="b3cV" x="776" y="263">0.9748</text>
+        <text class="b3cS" x="252" y="283">shuffled ids: 0.0004</text>
+
+        <text class="b3cA" x="236" y="328">0</text>
+        <text class="b3cA" x="500" y="328">0.5</text>
+        <text class="b3cA" x="770" y="328">1.0</text>
+
+        <text class="b3cN" x="30" y="354">Serai's own keys clear the gate and the buyer's fragments do not. Shuffle the truth and all three fall to zero.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the ghost bars are the proof that the score measures matching, not the size of the groups</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Store 1.0000, SKU 0.9748, and where the 2.5 percent went<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>At store grain (every order line, truth = the store behind it) the store id scores <strong>1.0000</strong>: 186,387 predicted pairs, all of them true, none missed. At SKU grain the SKU scores <strong>0.9748</strong>: it finds 17,033 of 17,474 true pairs with no false ones. The gap is 219 lines on listings missing from Serai's SKU mapping table, so their SKU is empty and they link to nothing.</p>
+        <p>That gap is the lesson in miniature. Owning the key means maintaining it: a listing created on a marketplace last week and not yet mapped is invisible to every SKU-grain use case. The fix is a job and an owner (a daily check for unmapped listings, a count on the ops dashboard), not a better algorithm.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The break button: shuffle the truth<span class="mini">1 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A scorer that returns high numbers for the wrong reason is worse than none. So break it on purpose: shuffle the hidden ids (seed 7 on the bench) and score again. The best customer key drops to 0.0000, the store id to 0.0037, the SKU to 0.0004. If the store id had kept a high score on shuffled truth, the rate would be measuring how big the groups are, not whether they are right. It falls to near zero, so it measures matching.</p>
+        <p>The quieter sanity check sits in the key list: the order id is unique per order, so at customer grain it claims 0 pairs and scores 0. A key that is unique per row can never join anything above its own grain, which is exactly what it should print.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What this does not teach: probabilistic linkage<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Everything above asks one question: does a deterministic key exist at this grain? It does not try to beat the fragments with weighted agreement scores, blocking or a clerical review band. That is record linkage proper, and it has its own session: <a href="https://phoebefu6.github.io/learn-entity-resolution-with-phoebe/courses/03-fellegi-sunter.html">Fellegi-Sunter in the entity resolution course</a>. Read it with tonight's numbers in hand: a probabilistic model can weigh a matching address above a matching initial, but it still cannot recover a value the export never contained.</p>
+      </div>
+    </details>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>Olist keys its sellers and products itself.</strong> Olist describes itself as connecting small businesses from all over Brazil to marketplace channels with a single contract, an enabler model. In its public dataset every order line carries Olist's own <code>seller_id</code> and <code>product_id</code>, which is why store and SKU grain hold on its data: the ids belong to the business doing the joining, not to the channel. Serai's version of that is its store and SKU mapping tables from session 2. The 219 unmapped lines on the bench are constructed (the full Olist file has no gaps), placed there to show what an unmaintained mapping table costs.</p>
+    </div>
+  </section>
+
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Score keys against the hidden truth</h2>
+      <span class="tag demo">★ 22 min · everyone builds</span>
+    </div>
+    <p class="lede">Plain Python, standard library only, on the bench's own sample: 8,614 real Olist orders with constructed exports and masking. Every output below is what this code printed when it was run for this page. The unshuffled numbers must match the bench to the digit; if yours do not, the bug is in your row rules, and step 2 is where to look.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 352" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn pipeline. The sample file becomes rows, one per order with seven key fields, empty where the export hides the value. The truth column feeds a Counter over truth, whose sum of n choose 2 is T. Rows missing any chosen key are skipped, and the rest feed a Counter over key values, giving P, and a Counter over key and truth together, giving TP. All three feed the true match rate, TP over P plus T minus TP, which for the masked name is 339 over 2,371,086.">
+        <defs>
+          <filter id="b3dSk" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="61" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+          <pattern id="b3dHc" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-38)"><line x1="0" y1="0" x2="0" y2="7" stroke="#BE3745" stroke-width="1" opacity=".5"/></pattern>
+          <marker id="b3dAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2B1518" stroke-width="1.6" stroke-linecap="round"/></marker>
+        </defs>
+        <style>
+          .b3dH { font: 800 12px Inter, sans-serif; fill: #2B1518; }
+          .b3dL { font: 600 12px Inter, sans-serif; fill: #2B1518; }
+          .b3dS { font: 400 11px Inter, sans-serif; fill: #6B5256; }
+          .b3dB { font: 800 11px Inter, sans-serif; fill: #0A4D48; }
+          .b3dW { font: 800 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b3dN { font: 400 12px Inter, sans-serif; fill: #6B5256; }
+        </style>
+
+        <text class="b3dH" x="30" y="26">THE SCORER, END TO END</text>
+
+        <g filter="url(#b3dSk)" fill="none" stroke="#2B1518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- row 1 -->
+          <rect x="30" y="46" width="170" height="60" rx="8" transform="rotate(-0.8 115 76)" fill="url(#b3dHc)"/>
+          <rect x="250" y="46" width="230" height="60" rx="8" transform="rotate(0.6 365 76)" fill="#FFFFFF"/>
+          <rect x="530" y="46" width="320" height="60" rx="8" transform="rotate(-0.5 690 76)" fill="#FDF1EF"/>
+          <path d="M204 76 L244 76" marker-end="url(#b3dAr)"/>
+          <path d="M484 76 L524 76" marker-end="url(#b3dAr)"/>
+          <!-- row 2: three counters -->
+          <rect x="30" y="150" width="250" height="60" rx="8" transform="rotate(0.7 155 180)" fill="#FFFFFF"/>
+          <rect x="315" y="150" width="250" height="60" rx="8" transform="rotate(-0.6 440 180)" fill="#FFFFFF"/>
+          <rect x="600" y="150" width="250" height="60" rx="8" transform="rotate(0.5 725 180)" fill="#FFFFFF"/>
+          <path d="M300 110 L170 146" marker-end="url(#b3dAr)"/>
+          <path d="M620 110 L460 146" marker-end="url(#b3dAr)"/>
+          <path d="M780 110 L735 146" marker-end="url(#b3dAr)"/>
+          <!-- row 3: the rate -->
+          <rect x="250" y="250" width="380" height="58" rx="10" transform="rotate(-0.4 440 279)" fill="#0E6F68" stroke="#0E6F68"/>
+          <path d="M155 214 L290 246" marker-end="url(#b3dAr)"/>
+          <path d="M440 214 L440 244" marker-end="url(#b3dAr)"/>
+          <path d="M725 214 L590 246" marker-end="url(#b3dAr)"/>
+          <!-- tally doodle -->
+          <path d="M680 270 L680 292 M688 270 L688 292 M696 270 L696 292 M704 270 L704 292 M674 288 L710 274"/>
+        </g>
+
+        <text class="b3dL" x="46" y="72">enabler-sample.js</text>
+        <text class="b3dS" x="46" y="90">JSON behind a JS prefix</text>
+        <text class="b3dL" x="266" y="72">rows: one per order</text>
+        <text class="b3dS" x="266" y="90">7 fields, None = export hid it</text>
+        <text class="b3dL" x="546" y="72">skip a row if any chosen key is None</text>
+        <text class="b3dS" x="546" y="90">hashed phone exists on 265 orders only</text>
+
+        <text class="b3dL" x="46" y="176">Counter(truth)</text>
+        <text class="b3dB" x="46" y="194">sum of n choose 2 = T</text>
+        <text class="b3dL" x="331" y="176">Counter(key values)</text>
+        <text class="b3dB" x="331" y="194">sum of n choose 2 = P</text>
+        <text class="b3dL" x="616" y="176">Counter((key, truth))</text>
+        <text class="b3dB" x="616" y="194">sum of n choose 2 = TP</text>
+
+        <text class="b3dW" x="268" y="274">true match rate = TP / (P + T - TP)</text>
+        <text class="b3dW" x="268" y="294">masked name: 339 / 2,371,086 = 0.0001</text>
+
+        <text class="b3dN" x="30" y="336">Truth counts every row; P and TP only count rows that carry every chosen key. No pair is ever built.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - T is fed from all rows, so a key that drops rows pays for it as missed pairs</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Load the sample and expand the lines.</strong> The bench's sample is a JavaScript file: a comment header, then <code>window.ENABLER_SAMPLE = </code>, then plain JSON, then a semicolon. Split off everything up to the prefix, strip the trailing semicolon, and <code>json.loads</code> the rest. Lines ship as a count per order; expand them into a line-to-order index.</p>
+        <div class="prompt-box good"><span class="label">★ Step 1 · load and expand</span>import json, os, urllib.request
+from collections import Counter
+from itertools import combinations
+import random
+
+URL = "https://phoebefu6.github.io/learn-ship-ecommerce-enabler-with-phoebe/assets/enabler-sample.js"
+if not os.path.exists("enabler-sample.js"):
+    urllib.request.urlretrieve(URL, "enabler-sample.js")
+
+txt = open("enabler-sample.js", encoding="utf-8").read()
+body = txt.split("window.ENABLER_SAMPLE = ", 1)[1].strip().rstrip(";")
+s = json.loads(body)
+
+line_order = [o for o, k in enumerate(s["linesPerOrder"]) for _ in range(k)]
+print(s["nOrders"], len(line_order), s["nStores"], s["nSkus"])
+print("seller-shipped", sum(s["shipped"]), "unmapped lines", sum(s["lineUnmapped"]))
+# 8614 9843 1527 5978
+# seller-shipped 265 unmapped lines 219</div>
+      </div>
+      <div class="step">
+        <p><strong>Build the customer-grain rows, one per order.</strong> Each field follows the constructed masking exactly. The masked name and the two phone digits reach every export. The hashed phone exists only where the raw phone arrived, on seller-shipped orders; since a hash is one value per person, the stand-in stores the customer index there. City and zip exist on Platform A (export 0) and on seller-shipped orders. Store and SKU come from the order's first line, and the SKU is empty when that listing is missing from the mapping table. The truth, the real customer, lives in its own list and is never a key.</p>
+        <div class="prompt-box good"><span class="label">★ Step 2 · rows and hidden truth</span>first_line = {}
+for i, o in enumerate(line_order):
+    first_line.setdefault(o, i)
+
+def fields(o, li):
+    c, e, sh = s["cust"][o], s["exp"][o], s["shipped"][o]
+    return {"mname":  s["mname"][c],                           # F***l on every export
+            "mphone": s["phone2"][c],                          # last two digits
+            "hphone": c if sh else None,                       # raw phone only if seller-shipped
+            "loc":    s["loc"][o] if (e == 0 or sh) else None, # Platform A, or shipped C
+            "oid":    o,
+            "store":  s["lineStore"][li],
+            "sku":    None if s["lineUnmapped"][li] else s["lineSku"][li]}
+
+rows  = [fields(o, first_line[o]) for o in range(s["nOrders"])]
+truth = [s["cust"][o] for o in range(s["nOrders"])]
+print(len(rows), rows[0])
+# 8614 {'mname': 39, 'mphone': 70, 'hphone': None, 'loc': None, 'oid': 0, 'store': 458, 'sku': 1163}</div>
+      </div>
+      <div class="step">
+        <p><strong>Write the scorer with three Counters.</strong> Skip any row missing a chosen key for P and TP, count every row for T, and sum n choose 2 over each. Then check it against the bench's first rung before you trust it: masked name must print P 2371086, T 339, TP 339.</p>
+        <div class="prompt-box good"><span class="label">★ Step 3 · score(rows, truth, keys)</span>def c2(n):
+    return n * (n - 1) // 2
+
+def score(rows, truth, keys):
+    pred, both = Counter(), Counter()
+    for r, t in zip(rows, truth):
+        vals = tuple(r[k] for k in keys)
+        if None in vals:
+            continue
+        pred[vals] += 1
+        both[(vals, t)] += 1
+    P  = sum(c2(n) for n in pred.values())
+    T  = sum(c2(n) for n in Counter(truth).values())
+    TP = sum(c2(n) for n in both.values())
+    den = P + T - TP
+    return {"P": P, "T": T, "TP": TP,
+            "rate": TP / den if den else 0.0,
+            "recall": TP / T if T else 0.0,
+            "precision": TP / P if P else None}
+
+print(score(rows, truth, ["mname"]))
+# {'P': 2371086, 'T': 339, 'TP': 339, 'rate': 0.0001429724607205306,
+#  'recall': 1.0, 'precision': 0.0001429724607205306}</div>
+      </div>
+      <div class="step">
+        <p><strong>Run the rungs.</strong> Single keys first, then the stacks. Watch P fall and recall hold, until the address arrives and recall drops to the 19.2 percent of true pairs where both orders carry it.</p>
+        <div class="prompt-box good"><span class="label">★ Step 4 · the ladder</span>RUNGS = [["mname"], ["mphone"], ["hphone"], ["loc"], ["oid"], ["store"], ["sku"],
+         ["mname", "mphone"], ["mname", "mphone", "loc"], ["mname", "mphone", "store"]]
+for k in RUNGS:
+    r = score(rows, truth, k)
+    print(f"{'+'.join(k):&lt;20} rate {r['rate']:.4f}  recall {r['recall']:.1%}  P {r['P']:&gt;9,}  TP {r['TP']}")
+# mname                rate 0.0001  recall 100.0%  P 2,371,086  TP 339
+# mphone               rate 0.0009  recall 100.0%  P   371,023  TP 339
+# hphone               rate 0.0000  recall 0.0%  P         0  TP 0
+# loc                  rate 0.0366  recall 19.2%  P     1,502  TP 65
+# oid                  rate 0.0000  recall 0.0%  P         0  TP 0
+# store                rate 0.0007  recall 29.2%  P   139,297  TP 99
+# sku                  rate 0.0033  recall 11.2%  P    11,237  TP 38
+# mname+mphone         rate 0.0142  recall 100.0%  P    23,928  TP 339
+# mname+mphone+loc     rate 0.1917  recall 19.2%  P        65  TP 65
+# mname+mphone+store   rate 0.2329  recall 29.2%  P       185  TP 99</div>
+      </div>
+      <div class="step">
+        <p><strong>Search every combination, not the ones you like.</strong> Seven keys give 127 non-empty subsets. A hand-picked ladder can always be accused of missing the clever one; the exhaustive search cannot.</p>
+        <div class="prompt-box good"><span class="label">★ Step 5 · best of 127</span>KEYS = ["mname", "mphone", "hphone", "loc", "oid", "store", "sku"]
+combos = [list(c) for n in range(1, 8) for c in combinations(KEYS, n)]
+best = max(combos, key=lambda k: score(rows, truth, k)["rate"])
+b = score(rows, truth, best)
+print(len(combos), "combos, best", "+".join(best), f"{b['rate']:.4f} precision {b['precision']:.1%}")
+# 127 combos, best mname+mphone+store 0.2329 precision 53.5%</div>
+      </div>
+      <div class="step">
+        <p><strong>Change the grain, then break the truth.</strong> At store and SKU grain there is one row per order line and the truth is the line's store or SKU. Then shuffle each truth list and search again. This uses Python's <code>random.Random(7).shuffle</code>, which is not the bench's mulberry32 shuffle, so your shuffled numbers differ slightly from the bench's (0.0036 here against its 0.0037 at store grain); what matters is that every grain collapses to near zero.</p>
+        <div class="prompt-box good"><span class="label">★ Step 6 · three grains and the break button</span>def line_rows(grain):
+    rw = [fields(o, li) for li, o in enumerate(line_order)]
+    tr = [s["lineStore"][li] if grain == "store" else s["lineSku"][li]
+          for li in range(len(line_order))]
+    return rw, tr
+
+grains = {"customer": (rows, truth), "store": line_rows("store"), "sku": line_rows("sku")}
+
+def best_rate(rw, tr):
+    return max(score(rw, tr, k)["rate"] for k in combos)
+
+for g, (rw, tr) in grains.items():
+    sh = list(tr)
+    random.Random(7).shuffle(sh)
+    print(f"{g:&lt;9} best {best_rate(rw, tr):.4f}   shuffled {best_rate(rw, sh):.4f}")
+sr, st = grains["store"]; print("store id", score(sr, st, ["store"]))
+kr, kt = grains["sku"];   print("sku", score(kr, kt, ["sku"]))
+# customer  best 0.2329   shuffled 0.0000
+# store     best 1.0000   shuffled 0.0036
+# sku       best 0.9748   shuffled 0.0004
+# store id {'P': 186387, 'T': 186387, 'TP': 186387, 'rate': 1.0, 'recall': 1.0, 'precision': 1.0}
+# sku {'P': 17033, 'T': 17474, 'TP': 17033, 'rate': 0.9747625042920911,
+#      'recall': 0.9747625042920911, 'precision': 1.0}</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Put the scorer next to the registry.</strong> Every use case on the roadmap names the grain it needs; the gate is a one-line check of that grain's best rate against 0.90, run every time an export changes. Session 8's roadmap sequencer does exactly that and blocks the single customer view. Serai, its exports and its masking are constructed; the orders, and who placed them, are real Olist rows, and no figure here is a claim about any real enabler.</p>
+    </div>
+  </section>
+
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 4</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Change the masking rule in step 2 so Platform B also keeps city and zip, rerun steps 4 and 5, and write down how far the best customer-grain rate moves. Is it anywhere near 0.90?</li>
+      <li>Double the data by stacking the rows with a second copy whose customer ids are offset (so no new true pairs cross copies), and rescore the masked phone. Check that P roughly quadruples while T only doubles.</li>
+      <li>Pick one join your team relies on today and score it: write down P, T, TP and the rate, or write down why you cannot, because nobody holds the truth to score it against.</li>
+      <li>List every use case on your roadmap with the grain it needs. Mark each grain with its best measured rate, and circle the ones that sit below the gate.</li>
+    </ol>
+  </section>
+
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+    <p>Clear all three and Analyst session 3 gets stamped in your passport.</p>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · The masked phone finds all 339 true pairs. Why does it score only 0.0009?</p>
+      <button class="qopt" type="button">A · Because the true match rate ignores recall</button>
+      <button class="qopt" type="button">B · Because two digits are rounded before scoring</button>
+      <button class="qopt" type="button">C · Because it also claims 371,023 pairs, and the denominator counts every pair on either side, so the false ones drown the true ones</button>
+      <button class="qopt" type="button">D · Because Platform B drops the phone entirely</button>
+      <p class="qwhy">Recall is 100 percent and precision is almost zero. The true match rate is TP over the union of claimed and true pairs, 339 over roughly 371,023, so a key that links everything scores almost like one that links nothing.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Someone proposes hashing the buyer's phone to build a single customer view. What does the bench say?</p>
+      <button class="qopt" type="button">A · The hashed phone predicts 0 pairs: only 265 seller-shipped orders carried a raw phone, and no two were the same person. A hash needs the raw value</button>
+      <button class="qopt" type="button">B · It works once the hash algorithm is strong enough</button>
+      <button class="qopt" type="button">C · It reaches 0.2329, the best rung on the ladder</button>
+      <button class="qopt" type="button">D · It works, but only on Platform A</button>
+      <p class="qwhy">Hashing protects a value you already hold; it cannot create one. Where the export masked the phone there is nothing to hash, so the question is how many rows arrive with the raw value, and on platform-shipped orders the answer is none.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="3">
+      <p class="qtext">3 · The store id scores 1.0000 at store grain. After shuffling the hidden store ids it scores 0.0037. What does the second number tell you?</p>
+      <button class="qopt" type="button">A · That the store mapping table has errors</button>
+      <button class="qopt" type="button">B · That seed 7 is unlucky and should be changed</button>
+      <button class="qopt" type="button">C · That store grain fails the 90 percent gate after all</button>
+      <button class="qopt" type="button">D · That the rate measures whether the groups are right, not how big they are: with the truth scrambled, the same key collapses to near zero</button>
+      <p class="qwhy">The break button is a test of the scorer, not of the key. A metric that stayed high on shuffled truth would be rewarding group size; one that falls to near zero at every grain is measuring matching.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What this session teaches, and where it came from</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Pair scoring: P, T, TP and the true match rate</span><span class="note">Computed: every rate on this page was printed by the scorer on the bench sample and agrees with the bench to four decimals (the Python shuffle differs slightly, as stated)</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Marketplace buyer masking</span><span class="note">Reported, from integrators' public notes (Easy Shopee &amp; Lazada help centre, 2022; BigSeller; Zetpy, June 2026; openlinker-project, GitHub issue 2882); the bench's masking is constructed and modelled on them</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Store and SKU grain on Serai's own keys</span><span class="note">Computed on real Olist lines; the three-export split and the 219 unmapped lines are constructed</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Olist orders and customers</span><span class="note">Olist, "Brazilian E-Commerce Public Dataset by Olist", Kaggle, CC BY-NC-SA 4.0; repeat-rate counts recomputed in this build</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Record linkage methods</span><span class="note">Not taught here: Fellegi-Sunter, blocking and review bands belong to the entity resolution course, linked from Part 3</span></div>
+    </div>
+    <p class="mono" style="margin-top:14px">Every fact on this page, and its verification tier, is recorded in the course's source map.</p>
+  </section>
+
+  <section class="cheat" id="cheatsheet">
+    <h3>Analyst session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Score pairs</b><span>P claimed, T true, TP both. Rate = TP / (P + T - TP), the Jaccard index of the pair sets.</span></div>
+      <div class="cheat-item"><b>Never build a pair</b><span>Sum n choose 2 over key groups, truth groups, and key x truth cells. Three Counters.</span></div>
+      <div class="cheat-item"><b>Collide or go silent</b><span>Masked fragments either link strangers or vanish on the exports that drop them. Best of 127: 0.2329.</span></div>
+      <div class="cheat-item"><b>A hash needs the raw value</b><span>265 raw phones, 0 pairs. Ask how many rows arrive unmasked before discussing algorithms.</span></div>
+      <div class="cheat-item"><b>Own the key, maintain it</b><span>Store 1.0000, SKU 0.9748; the gap is 219 unmapped listings. A job and an owner, not a model.</span></div>
+      <div class="cheat-item"><b>Break it on purpose</b><span>Shuffle the truth; every grain must fall to near zero. Small samples flatter fragments: read rates as ceilings.</span></div>
+    </div>
+  </section>
+
+  <div class="callout next">
+    <span class="nx-pill">Next session</span>
+    <p>The buyer stays out of reach, so the value moves to what Serai can observe itself. Session 4 writes the per-minute event spec for Pasar Live, a constructed live channel: room entry, product card impression, click, add to cart and order, keyed by stream, minute and SKU on one clock, with an owning team named for every event. It is a contract before it is a table.</p>
+  </div>
+
+  <footer class="pagefoot">
+    <span>Analyst session 3 of 8 · learn-ship-ecommerce-enabler-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b2-three-exports-one-schema.html">← Prev: Three marketplace exports, one schema</a> &nbsp;·&nbsp; <a href="b4-per-minute-events.html">Next: Per-minute events for a live channel →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>
