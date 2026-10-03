@@ -6,6 +6,7 @@
    white on the contrast fill (6.0:1) and a .08 chip wash, measured on painted pixels. */
 
 :root {
+  --faint-text: #A1605A;
   --indigo: #BE3745;
   --indigo-deep: #8A2330;
   --indigo-mid: #E0685E;
@@ -1193,7 +1194,7 @@ figure.zoomable.can-scroll figcaption::after {
 .dh-track { display: flex; flex-wrap: wrap; gap: 3px; }
 .dh-cell { font: 700 0.66rem ui-monospace, Menlo, monospace; padding: 3px 6px; border-radius: 5px;
   background: var(--indigo-50); color: var(--indigo-deep); transition: all .1s linear; }
-.dh-cell.rest { background: var(--paper); color: var(--faint); }
+.dh-cell.rest { background: var(--paper); color: var(--faint-text); }
 .dh-cell.now { background: var(--amber); color: #fff; transform: scale(1.18); }
 .dh-panel { border: 1px solid var(--hairline); border-radius: var(--radius); background: #fff; overflow: hidden; }
 .dh-phead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
